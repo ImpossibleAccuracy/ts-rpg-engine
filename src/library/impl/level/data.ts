@@ -1,25 +1,44 @@
-interface Coordinates {
+import type { SpriteMetaData } from "@/library/api/visualizer/model";
+import type { SpriteImageMetaData } from "@/library/impl/models";
+
+export interface CoordinatesJson {
   x: number;
   y: number;
 }
 
-interface Dimensions {
+export interface DimensionsJson {
   w: number;
   h: number;
 }
 
-export interface ModelJson {
+export type RectJson = CoordinatesJson & DimensionsJson;
+
+export type CollisionType = RectJson | Array<RectJson>;
+
+interface BaseModelJson {
+  type?: string;
+  metadata?: unknown;
+  model_dimensions?: RectJson;
+}
+
+export interface ModelJson extends BaseModelJson {
+  type: "model" | undefined;
   name: string;
-  model_dimensions?: Dimensions;
 }
 
-export interface SpriteModelJson {
-  update_rate?: number;
+export interface SpriteModelJson extends BaseModelJson {
+  type: "sprite";
+  name: string;
+  props?: SpriteImageMetaData;
+}
+
+export interface ArraySpriteModelJson extends BaseModelJson {
+  type: "sprite_array";
   items: Array<string>;
-  model_dimensions?: Dimensions;
+  props?: SpriteMetaData;
 }
 
-export type ModelType = ModelJson | SpriteModelJson;
+export type ModelType = ModelJson | SpriteModelJson | ArraySpriteModelJson;
 
 export interface ControllerJson {
   name: string;
@@ -31,9 +50,10 @@ export type ControllerType = string | ControllerJson;
 export interface EntityJson {
   model?: ModelType;
   is_material?: boolean;
-  position: Coordinates;
-  size: Dimensions;
+  position: CoordinatesJson;
+  size: DimensionsJson;
   order: number;
+  collision?: CollisionType;
   controller?: ControllerType;
 }
 
@@ -44,17 +64,24 @@ export interface EntityCollectionJson {
 }
 
 export interface LevelJson {
+  size: DimensionsJson;
   objects: Map<string, EntityJson | EntityCollectionJson>;
 }
 
 export function instanceOfModel(object: object): object is ModelJson {
-  return "name" in object;
+  return (!("type" in object) || object.type == "model") && "name" in object;
 }
 
 export function instanceOfSpriteModel(
   object: object,
 ): object is SpriteModelJson {
-  return "items" in object;
+  return "name" in object && "type" in object && object.type == "sprite";
+}
+
+export function instanceOfArraySpriteModel(
+  object: object,
+): object is ArraySpriteModelJson {
+  return "type" in object && object.type == "sprite_array" && "items" in object;
 }
 
 export function instanceOfEntity(object: object): object is EntityJson {

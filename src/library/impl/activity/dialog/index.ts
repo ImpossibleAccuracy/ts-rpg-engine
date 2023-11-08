@@ -1,16 +1,17 @@
 import { AbstractActivity } from "@/library/api/activity";
 import { DialogVisualizer } from "@/library/impl/visualizer/dialog";
 import { CanvasRenderer } from "@/library/impl/visualizer/renderer";
-import type { DialogCallbacks, DialogData } from "@/library/impl/model/dialog";
+import type { DialogCallbacks, DialogData } from "@/library/impl/data/dialog";
 import {
+  ControllerAction,
   MouseKeyboardController,
-  type OnKeyPressListener,
+  type OnControllerActionListener,
 } from "@/library/impl/controller";
-import type { GameEngine } from "@/library/api/engine";
+import { GameEngine } from "@/library/api/engine";
 
 export class DialogActivity
   extends AbstractActivity<CanvasRenderer, DialogVisualizer>
-  implements OnKeyPressListener
+  implements OnControllerActionListener
 {
   private readonly dialogData: DialogData;
   private readonly dialogCallbacks: DialogCallbacks;
@@ -39,7 +40,7 @@ export class DialogActivity
   onDetach() {
     const game = this.requireGameEngine();
     if (game.controller instanceof MouseKeyboardController) {
-      game.controller.attachKeyPressListener(this);
+      game.controller.detachKeyPressListener(this);
     }
 
     super.onDetach();
@@ -51,11 +52,23 @@ export class DialogActivity
 
   public update(): void {}
 
-  public onKeyPress(key: string): void {
-    if (key == "d" || key == "arrowright") {
-      this.activeButtonIndex += 1;
-    } else if (key == "a" || key == "arrowleft") {
-      this.activeButtonIndex -= 1;
+  public onAction(action: ControllerAction): void {
+    if (action.type == "keypress") {
+      if (action.name == "d" || action.name == "arrowright") {
+        this.activeButtonIndex += 1;
+      } else if (action.name == "a" || action.name == "arrowleft") {
+        this.activeButtonIndex -= 1;
+      } else if (action.name == "escape") {
+        this.finish();
+      }
     }
+  }
+
+  finish() {
+    if (!this.isFinished) {
+      this.dialogCallbacks.onClose();
+    }
+
+    super.finish();
   }
 }

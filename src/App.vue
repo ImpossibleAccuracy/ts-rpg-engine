@@ -1,20 +1,8 @@
 <template>
   <main>
-    <canvas ref="canvas" height="500" width="500"></canvas>
+    <router-view />
   </main>
 </template>
-
-<script lang="ts" setup>
-import { onMounted, ref } from "vue";
-import { TestGameEngine } from "@/testgame";
-
-const canvas = ref<HTMLCanvasElement>();
-
-onMounted(() => {
-  const gameEngine = new TestGameEngine(canvas.value!);
-  gameEngine.start();
-});
-</script>
 
 <style lang="scss" scoped>
 main {
@@ -24,5 +12,7 @@ main {
   display: flex;
   align-items: center;
   justify-content: center;
+
+  padding: 24px;
 }
 </style>

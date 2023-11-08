@@ -17,16 +17,28 @@ class MouseState {
   }
 }
 
-export interface OnKeyPressListener {
-  onKeyPress: (key: string) => void;
+export class ControllerAction {
+  public readonly type: string;
+  public readonly name: string;
+  public readonly data?: unknown;
+
+  constructor(type: string, name: string, data?: unknown) {
+    this.type = type;
+    this.name = name;
+    this.data = data;
+  }
+}
+
+export interface OnControllerActionListener {
+  onAction: (action: ControllerAction) => void;
 }
 
 export class MouseKeyboardController extends AbstractController {
   private readonly keys: Map<string, boolean> = new Map();
   private readonly mouseState: MouseState = new MouseState();
 
-  private onKeyPressListeners: Array<OnKeyPressListener> =
-    new Array<OnKeyPressListener>();
+  private onKeyPressListeners: Array<OnControllerActionListener> =
+    new Array<OnControllerActionListener>();
 
   constructor(screenOffsetX: number = 0, screenOffsetY: number = 0) {
     super();
@@ -39,12 +51,10 @@ export class MouseKeyboardController extends AbstractController {
     window.addEventListener("keydown", (e) => {
       const key = this.formatKeyName(e.key);
       this.keys.set(key, true);
-    });
 
-    window.addEventListener("keypress", (e) => {
-      const key = this.formatKeyName(e.key);
+      const action = new ControllerAction("keypress", key);
 
-      this.onKeyPressListeners.forEach((l) => l.onKeyPress(key));
+      this.onKeyPressListeners.forEach((l) => l.onAction(action));
     });
 
     window.addEventListener("mousemove", (e) => {
@@ -77,11 +87,11 @@ export class MouseKeyboardController extends AbstractController {
     return this.isKeyPressed("s", "arrowdown");
   }
 
-  public attachKeyPressListener(listener: OnKeyPressListener) {
+  public attachKeyPressListener(listener: OnControllerActionListener) {
     this.onKeyPressListeners.push(listener);
   }
 
-  public detachKeyPressListener(listener: OnKeyPressListener) {
+  public detachKeyPressListener(listener: OnControllerActionListener) {
     this.onKeyPressListeners = this.onKeyPressListeners.filter(
       (el) => el !== listener,
     );

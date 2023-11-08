@@ -11,6 +11,7 @@ export interface DialogData {
 }
 
 export interface DialogCallbacks {
-  accept: () => void;
-  cancel: () => void;
+  ocAccept: () => void;
+  onCancel: () => void;
+  onClose: () => void;
 }

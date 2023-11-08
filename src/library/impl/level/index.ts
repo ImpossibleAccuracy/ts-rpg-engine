@@ -1,31 +1,32 @@
-import { Rect2D } from "@/library/api/model/rect";
+import { CompositeRect2D, Rect2D } from "@/library/api/model/rect";
 import { Model, ModelLoader } from "@/library/api/visualizer/model";
-import { AssetsLevelBuilder } from "@/library/api/level";
+import { AssetsLevelBuilder, type EntityFactory } from "@/library/api/level";
 import type {
+  CollisionType,
   ControllerJson,
   ControllerType,
-  EntityJson,
+  CoordinatesJson,
+  DimensionsJson,
   LevelJson,
   ModelType,
+  RectJson,
 } from "@/library/impl/level/data";
 import {
+  instanceOfArraySpriteModel,
   instanceOfEntity,
   instanceOfEntityCollection,
   instanceOfModel,
   instanceOfSpriteModel,
 } from "@/library/impl/level/data";
 import {
-  DynamicEntity,
   Entity,
   EntityController,
   type EntityControllerFactory,
-  StaticEntity,
 } from "@/library/api/model/entity";
 import type { Nullable } from "@/library/api/model/common";
 
-export class AssetsLevelBuilder2D<C extends Model> extends AssetsLevelBuilder<
+export class AssetsLevelBuilder2D extends AssetsLevelBuilder<
   Rect2D,
-  C,
   LevelJson
 > {
   constructor(
@@ -35,39 +36,15 @@ export class AssetsLevelBuilder2D<C extends Model> extends AssetsLevelBuilder<
     super(path, controllers);
   }
 
-  calculateLevelDimensions(objects: Array<Entity<Rect2D>>): Rect2D {
-    let minLeft = 0;
-    let minTop = 0;
-    let maxLeft = 0;
-    let maxTop = 0;
-
-    for (const object of objects) {
-      const dimensions = object.getModelRect();
-
-      if (dimensions.posX < minLeft) {
-        minLeft = dimensions.posX;
-      }
-
-      if (dimensions.posY < minTop) {
-        minTop = dimensions.posY;
-      }
-
-      if (dimensions.posX + dimensions.sizeX > maxLeft) {
-        maxLeft = dimensions.posX + dimensions.sizeX;
-      }
-
-      if (dimensions.posY + dimensions.sizeY > maxTop) {
-        maxTop = dimensions.posX + dimensions.sizeY;
-      }
-    }
-
-    return new Rect2D(maxLeft - minLeft, maxTop - minTop);
+  calculateLevelDimensions(json: LevelJson): Rect2D {
+    return new Rect2D(json.size.w, json.size.h);
   }
 
-  parseObjects(
+  public async parseObjects(
     json: LevelJson,
-    modelLoader: ModelLoader<C>,
-  ): Array<Entity<Rect2D>> {
+    entityFactory: EntityFactory<Rect2D>,
+    modelLoader: ModelLoader,
+  ): Promise<Array<Entity<Rect2D>>> {
     const result = new Array<Entity<Rect2D>>();
 
     for (const obj of Object.entries(json.objects)) {
@@ -76,26 +53,38 @@ export class AssetsLevelBuilder2D<C extends Model> extends AssetsLevelBuilder<
 
       if (instanceOfEntity(value)) {
         if (!value.model) {
-          throw new Error("Entity model is not specified");
+          throw new Error("Entity model must be specified");
         }
 
-        const item = this.parseEntity(
-          value,
-          value.model,
-          modelLoader,
+        const item = await this.buildEntity(
           key,
+          value.controller ?? null,
           value.order,
+          value.size,
+          value.position,
+          value.model,
+          value.is_material ?? true,
+          value.collision ?? null,
+          entityFactory,
+          modelLoader,
         );
 
         result.push(item);
       } else if (instanceOfEntityCollection(value)) {
         for (const valueElement of value.items) {
-          const item = this.parseEntity(
-            valueElement,
-            value.model,
-            modelLoader,
+          const data = Object.assign({}, valueElement, value);
+
+          const item = await this.buildEntity(
             key,
-            value.order,
+            data.controller ?? null,
+            data.order,
+            data.size,
+            data.position,
+            data.model,
+            data.is_material ?? true,
+            data.collision ?? null,
+            entityFactory,
+            modelLoader,
           );
 
           result.push(item);
@@ -106,68 +95,90 @@ export class AssetsLevelBuilder2D<C extends Model> extends AssetsLevelBuilder<
     return result;
   }
 
-  private parseEntity(
-    entityJson: EntityJson,
-    modelJson: ModelType,
-    modelLoader: ModelLoader<C>,
+  private async buildEntity(
     type: string,
-    fallbackOrder: number,
-  ): Entity<Rect2D> {
-    const rect = new Rect2D(
-      entityJson.size.w,
-      entityJson.size.h,
-      entityJson.position.x,
-      entityJson.position.y,
+    controllerInfo: Nullable<ControllerType>,
+    order: number,
+    size: DimensionsJson,
+    position: CoordinatesJson,
+    modelInfo: ModelType,
+    isMaterial: boolean,
+    collisionInfo: Nullable<CollisionType>,
+    entityFactory: EntityFactory<Rect2D>,
+    modelLoader: ModelLoader,
+  ): Promise<Entity<Rect2D>> {
+    const rect = new Rect2D(size.w, size.h, position.x, position.y);
+
+    const model = await this.loadModel(modelInfo, modelLoader);
+
+    const modelRect = modelInfo.model_dimensions
+      ? this.parseRect(modelInfo.model_dimensions)
+      : null;
+
+    const collision = collisionInfo ? this.parseCollision(collisionInfo) : null;
+
+    const controller = controllerInfo
+      ? this.parseController(controllerInfo)
+      : null;
+
+    return entityFactory.buildEntity(
+      type,
+      controller,
+      model,
+      isMaterial,
+      order,
+      rect,
+      modelRect,
+      collision,
     );
+  }
 
-    const model = this.loadModel(entityJson.model ?? modelJson, modelLoader);
+  private parseRect(rectJson: RectJson): Rect2D {
+    return new Rect2D(rectJson.w, rectJson.h, rectJson.x, rectJson.y);
+  }
 
-    const modelRect = this.parseModelRect(modelJson);
+  private parseCollision(collision: CollisionType): Rect2D {
+    if (collision instanceof Array) {
+      const items = new Array<Rect2D>();
 
-    if (entityJson.controller) {
-      const controller = this.parseController(entityJson.controller);
+      for (const item of collision) {
+        const collisionItem = this.parseCollision(item);
+        items.push(collisionItem);
+      }
 
-      return new DynamicEntity(
-        type,
-        model,
-        entityJson.is_material ?? true,
-        entityJson.order ?? fallbackOrder,
-        rect,
-        modelRect,
-        controller,
-      );
+      return new CompositeRect2D(items);
     } else {
-      return new StaticEntity(
-        type,
-        model,
-        entityJson.is_material ?? true,
-        entityJson.order ?? fallbackOrder,
-        rect,
-        modelRect,
-      );
+      return this.parseRect(collision as RectJson);
     }
   }
 
-  private parseModelRect(modelJson: ModelType): Nullable<Rect2D> {
-    return modelJson.model_dimensions
-      ? new Rect2D(modelJson.model_dimensions.w, modelJson.model_dimensions.h)
-      : null;
-  }
-
-  private loadModel(modelJson: ModelType, modelLoader: ModelLoader<C>) {
+  private loadModel(
+    modelJson: ModelType,
+    modelLoader: ModelLoader,
+  ): Promise<Model> {
     if (instanceOfModel(modelJson)) {
-      return modelLoader.load(modelJson.name!);
+      return modelLoader.load(modelJson.name, modelJson.metadata);
     } else if (instanceOfSpriteModel(modelJson)) {
-      return modelLoader.loadSprite(modelJson.items!, modelJson.update_rate);
+      return modelLoader.loadSprite(
+        modelJson.name,
+        modelJson.props,
+        modelJson.metadata,
+      );
+    } else if (instanceOfArraySpriteModel(modelJson)) {
+      return modelLoader.loadSpriteFromArray(
+        modelJson.items,
+        modelJson.props,
+        modelJson.metadata,
+      );
     } else {
-      throw new Error("Invalid model value");
+      throw new Error("Invalid data value");
     }
   }
 
   private parseController(
     controller: ControllerType,
   ): EntityController<Rect2D> {
-    if (controller instanceof String) {
+    if (typeof controller === "string") {
       return this.createController(controller as string);
     } else {
       const data = controller as ControllerJson;

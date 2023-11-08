@@ -1,8 +1,10 @@
 import { CanvasRenderer } from "@/library/impl/visualizer/renderer";
 import { CanvasVisualizer } from "@/library/impl/visualizer/world";
-import type { DialogData } from "@/library/impl/model/dialog";
+import type { DialogData } from "@/library/impl/data/dialog";
 
 export class DialogVisualizer extends CanvasVisualizer {
+  private readonly maxWidth: number = 300;
+
   constructor(renderer: CanvasRenderer) {
     super(renderer);
   }
@@ -13,19 +15,24 @@ export class DialogVisualizer extends CanvasVisualizer {
 
     const margin = 12;
     const padding = 12;
-    const height = 100;
+    const fontSize = 24;
 
-    const offsetX = margin;
-    const offsetY = canvas.height - height - margin;
+    const height = 100;
+    const width = Math.min(this.maxWidth, canvas.width - margin * 2);
+
+    const offsetX = (canvas.width - margin * 2) / 2 - width / 2;
+    const offsetY = (canvas.height - margin * 2) / 2 - height / 2 + 200;
 
     context.fillStyle = "brown";
-    context.fillRect(offsetX, offsetY, canvas.width - margin * 2, height);
+    context.fillRect(offsetX, offsetY, width, height);
 
     context.fillStyle = "white";
+    context.font = `${fontSize}px Roboto`;
     context.fillText(
-      activeButtonIndex.toString(),
+      dialogData.title,
       offsetX + padding,
-      offsetY + padding,
+      offsetY + padding + fontSize,
+      width - padding * 2,
     );
   }
 }
