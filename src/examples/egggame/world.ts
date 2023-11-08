@@ -6,7 +6,7 @@ import { DefaultEntityFactory } from "@/library/impl/entity/factory";
 import { AssetsLevelBuilder2D } from "@/library/impl/level";
 import { ColorModelLoader, ImageModelLoader } from "@/library/impl/models";
 import { RPGCanvasVisualizer } from "@/library/impl/visualizer/world";
-import { EggPlayerController } from "@/testgame/entity";
+import { EggPlayerController } from "@/examples/egggame/entity";
 import type { Entity } from "@/library/api/model/entity";
 import { StaticEntity } from "@/library/api/model/entity";
 import { randomInteger } from "@/library/api/utils/random";
@@ -14,11 +14,11 @@ import { randomInteger } from "@/library/api/utils/random";
 export class EggWorldActivity extends GameWorldActivity<CanvasRenderer> {
   private readonly wallWeight: number = 1;
 
-  constructor(assetsUrl: string, renderer: CanvasRenderer) {
+  constructor(assetsUrl: string, levelPath: string, renderer: CanvasRenderer) {
     const entityFactory = new DefaultEntityFactory();
 
     const levelBuilder = new AssetsLevelBuilder2D(
-      assetsUrl + "levels/level1.json",
+      assetsUrl + levelPath,
       new Map(
         Object.entries({
           player: () => new EggPlayerController(),
@@ -67,7 +67,7 @@ export class EggWorldActivity extends GameWorldActivity<CanvasRenderer> {
       wallModel,
       true,
       50,
-      new Rect2D(mapSizeX, this.wallWeight, 0, mapSizeX - this.wallWeight),
+      new Rect2D(mapSizeX, this.wallWeight, 0, mapSizeY - this.wallWeight),
       null,
     );
 
@@ -115,7 +115,7 @@ export class EggWorldActivity extends GameWorldActivity<CanvasRenderer> {
     const houseModel = await this.modelLoader.load("chicken_house.png");
 
     const defaultEggRect = new Rect2D(0.5, 0.5);
-    const defaultHouseRect = new Rect2D(3, 3);
+    const defaultHouseRect = new Rect2D(2.3, 3);
 
     const housesCount = randomInteger(2, 5);
     for (let i = 0; i < 1; i++) {

@@ -19,11 +19,9 @@ export class FullMapCanvasVisualizer extends LevelVisualizer<
   }
 
   display(level: Level<Rect2D>): void {
-    const ctx = this.renderer.context;
     const canvas = this.renderer.canvas;
 
-    ctx.fillStyle = "black";
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    this.renderer.clear();
 
     const mapDimensions = level.dimensions;
 
@@ -36,19 +34,16 @@ export class FullMapCanvasVisualizer extends LevelVisualizer<
       const model = entity.model;
       const modelRect = entity.getModelRect();
 
-      if (!(model instanceof ColorModel)) {
-        throw new Error("Invalid data type");
-      }
-
-      ctx.fillStyle = model.color;
-
-      ctx.fillRect(
+      this.renderer.drawModel(
+        model,
         modelRect.posX / wMultiplier,
         modelRect.posY / hMultiplier,
         modelRect.sizeX / wMultiplier,
         modelRect.sizeY / hMultiplier,
       );
     }
+
+    this.renderer.save();
   }
 }
 

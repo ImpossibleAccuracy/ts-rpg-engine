@@ -6,8 +6,10 @@ export enum DialogType {
 
 export interface DialogData {
   title: string;
+  gravity?: string;
   description?: string;
   type: DialogType;
+  closable?: boolean;
 }
 
 export interface DialogCallbacks {

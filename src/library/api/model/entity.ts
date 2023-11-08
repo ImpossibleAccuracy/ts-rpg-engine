@@ -13,6 +13,10 @@ export abstract class EntityController<R extends Rect> {
     this.owner = null;
   }
 
+  public get isAttached(): boolean {
+    return this.owner !== null;
+  }
+
   public attachToActivity(activity: AbstractActivity<CanvasRenderer>) {
     if (this.owner) {
       throw new Error("Entity controller already attached to activity");

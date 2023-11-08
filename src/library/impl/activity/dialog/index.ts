@@ -14,14 +14,14 @@ export class DialogActivity
   implements OnControllerActionListener
 {
   private readonly dialogData: DialogData;
-  private readonly dialogCallbacks: DialogCallbacks;
+  private readonly dialogCallbacks?: DialogCallbacks;
 
   private activeButtonIndex: number = 0;
 
   constructor(
     renderer: CanvasRenderer,
     dialogData: DialogData,
-    dialogCallbacks: DialogCallbacks,
+    dialogCallbacks?: DialogCallbacks,
   ) {
     super(new DialogVisualizer(renderer));
 
@@ -29,7 +29,7 @@ export class DialogActivity
     this.dialogCallbacks = dialogCallbacks;
   }
 
-  onAttach(game: GameEngine<CanvasRenderer>) {
+  public onAttach(game: GameEngine<CanvasRenderer>) {
     super.onAttach(game);
 
     if (game.controller instanceof MouseKeyboardController) {
@@ -37,7 +37,7 @@ export class DialogActivity
     }
   }
 
-  onDetach() {
+  public onDetach() {
     const game = this.requireGameEngine();
     if (game.controller instanceof MouseKeyboardController) {
       game.controller.detachKeyPressListener(this);
@@ -46,7 +46,7 @@ export class DialogActivity
     super.onDetach();
   }
 
-  draw(): void {
+  public draw(): void {
     this.visualizer.onDraw(this.dialogData, this.activeButtonIndex);
   }
 
@@ -59,14 +59,16 @@ export class DialogActivity
       } else if (action.name == "a" || action.name == "arrowleft") {
         this.activeButtonIndex -= 1;
       } else if (action.name == "escape") {
-        this.finish();
+        if (this.dialogData.closable ?? false) {
+          this.finish();
+        }
       }
     }
   }
 
-  finish() {
+  public finish() {
     if (!this.isFinished) {
-      this.dialogCallbacks.onClose();
+      this.dialogCallbacks?.onClose();
     }
 
     super.finish();

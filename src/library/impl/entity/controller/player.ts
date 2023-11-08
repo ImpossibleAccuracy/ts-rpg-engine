@@ -53,67 +53,78 @@ export abstract class PlayerController<
     if (this.canMove) {
       const displacement = this.moveEntity(controller);
 
-      if (!displacement) return;
+      if (displacement) {
+        const playerPosition = entity.rect;
 
-      const playerPosition = entity.rect;
+        if (entity.isMaterial) {
+          const playerCollision = entity.getCollisionRect();
+          const newCollision = entity
+            .getCollisionRect()
+            .plusRectCoordinates(displacement) as R;
 
-      if (entity.isMaterial) {
-        const playerCollision = entity.getCollisionRect();
-        const newCollision = this.calculateNewCollision(entity, displacement);
-
-        const obstacles = this.findOverlappingEntities(
-          level,
-          entity,
-          newCollision,
-        );
-
-        for (const obstacle of obstacles) {
-          this.updateDisplacementWithObstacle(
-            playerCollision,
-            displacement,
-            obstacle,
+          const obstacles = this.findOverlappingEntities(
+            level,
+            entity,
+            newCollision,
+            true,
           );
 
-          this.onEntityCollisionFound(level, entity, obstacle);
+          for (const obstacle of obstacles) {
+            this.updateDisplacementWithObstacle(
+              playerCollision,
+              displacement,
+              obstacle,
+            );
+          }
         }
+
+        const newPlayerPosition = playerPosition.plusRectCoordinates(
+          displacement,
+        ) as R;
+
+        entity.rect = newPlayerPosition;
+
+        this.onEntityPositionUpdate(
+          level,
+          entity,
+          playerPosition,
+          newPlayerPosition,
+        );
       }
-
-      const newPlayerPosition = playerPosition.plusRectCoordinates(
-        displacement,
-      ) as R;
-
-      entity.rect = newPlayerPosition;
-
-      this.onEntityPositionUpdate(
-        level,
-        entity,
-        playerPosition,
-        newPlayerPosition,
-      );
     }
+
+    this.findOverlappingEntities(
+      level,
+      entity,
+      entity.getCollisionRect(),
+      false,
+    ).forEach((el) => {
+      this.onEntityCollisionFound(level, entity, el);
+    });
   }
 
   private findOverlappingEntities(
     level: Level<R>,
     entity: Entity<R>,
     collision: R,
+    requireMaterial: boolean,
   ): Array<Entity<R>> {
     return level.entities.filter(
-      (el) => el !== entity && el.isMaterial && el.isOverlapsRect(collision),
+      (el) =>
+        el !== entity &&
+        (!requireMaterial || el.isMaterial) &&
+        el.isTouchRect(collision),
     );
-  }
-
-  private calculateNewCollision(entity: Entity<R>, displacement: R): R {
-    if (entity.collision) {
-      return entity.getCollisionRect().plusRectCoordinates(displacement) as R;
-    } else {
-      return entity.rect.plusRectCoordinates(displacement) as R;
-    }
   }
 }
 
 export abstract class PlayerController2D extends PlayerController<Rect2D> {
-  protected constructor(playerSpeed: number, runPlayerSpeed: number) {
+  private static readonly RoundDeep = 5;
+
+  protected constructor(
+    playerSpeed: number,
+    runPlayerSpeed: number = playerSpeed,
+  ) {
     super(playerSpeed, runPlayerSpeed);
   }
 
@@ -124,6 +135,7 @@ export abstract class PlayerController2D extends PlayerController<Rect2D> {
   ) {
     const obstacleCollision = obstacle.getCollisionRect();
 
+    // FIXME
     if (playerCollision.posX >= obstacleCollision.posX2) {
       displacement.posX = obstacleCollision.posX2 - playerCollision.posX;
     } else if (playerCollision.posX2 <= obstacleCollision.posX) {
@@ -133,5 +145,9 @@ export abstract class PlayerController2D extends PlayerController<Rect2D> {
     } else if (playerCollision.posY2 <= obstacleCollision.posY) {
       displacement.posY = obstacleCollision.posY - playerCollision.posY2;
     }
+  }
+
+  private roundNumber(number: number, n: number) {
+    return Math.round((number * 10 ** n) / 10 ** n);
   }
 }

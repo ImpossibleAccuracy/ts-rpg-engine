@@ -93,6 +93,7 @@ export class EggPlayerController extends PlayerController2D {
           DialogActivity,
           {
             title: `Осталось яиц: ${eggsCount - 1}`,
+            closable: true,
           },
           {
             onClose: () => {
@@ -163,115 +164,4 @@ export class EggPlayerController extends PlayerController2D {
     model.activeRow = row;
     model.tryMoveInRow(9);
   }
-
-  /*const speed = this.getSpeed(controller);
-
-  const newPosition = entity.rect.copy();
-
-  if (!(controller.top && controller.down)) {
-    if (controller.top) {
-      newPosition.posY -= speed;
-    } else if (controller.down) {
-      newPosition.posY += speed;
-    }
-  }
-
-  if (!(controller.left && controller.right)) {
-    if (controller.left) {
-      newPosition.posX -= speed;
-    } else if (controller.right) {
-      newPosition.posX += speed;
-    }
-  }
-
-  this.tryMoveEntityToNewPosition(newPosition, entity, level);
-
-  level.findAllEntitiesByType("carrot").forEach((carrot) => {
-    if (carrot.isTouch(entity)) {
-      this.canMove = false;
-
-      const activity = this.requireActivity();
-
-      const dialog = activity.createActivity(
-        DialogActivity,
-        {
-          title: "Вы подобрали морковку",
-        },
-        {
-          close: () => {
-            this.canMove = true;
-          },
-        },
-      );
-
-      activity.startActivity(dialog);
-    }
-  });*/
-
-  /*public onEntityPositionUpdate(
-    level: Level<Rect2D>,
-    entity: DynamicEntity<Rect2D>,
-    oldPosition: Rect2D,
-    newPosition: Rect2D,
-  ) {
-    level.findAllEntitiesByType("egg").forEach((egg) => {
-      if (egg.isTouch(entity)) {
-        this.canMove = false;
-
-        const activity = this.requireActivity();
-
-        const dialog = activity.createActivity(
-          DialogActivity,
-          {
-            title: "Вы получили яйцо",
-          },
-          {
-            onClose: () => {
-              level.removeEntity(egg);
-              this.canMove = true;
-            },
-          },
-        );
-
-        activity.startActivity(dialog);
-      }
-    });
-
-    if (newPosition.posX > oldPosition.posX) {
-      this.updateModelDirection(entity, "right");
-    } else if (newPosition.posX < oldPosition.posX) {
-      this.updateModelDirection(entity, "left");
-    } else if (newPosition.posY > oldPosition.posY) {
-      this.updateModelDirection(entity, "down");
-    } else if (newPosition.posY < oldPosition.posY) {
-      this.updateModelDirection(entity, "top");
-    } else {
-      this.updateModelDirection(entity, "nope");
-    }
-  }
-
-  private updateModelDirection(
-    entity: DynamicEntity<Rect2D>,
-    direction: string,
-  ) {
-    const model = entity.model;
-
-    if (!(model instanceof SpriteImageModel)) return;
-
-    const directionsRows = new Map(
-      Object.entries({
-        top: 8,
-        left: 9,
-        down: 10,
-        right: 11,
-      }),
-    );
-
-    const row = directionsRows.get(direction);
-
-    if (!row) return;
-
-    model.activeRow = row;
-    model.tryMoveInRow(9);
-  }*/
 }

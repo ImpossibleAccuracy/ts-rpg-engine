@@ -16,12 +16,21 @@ export class DialogVisualizer extends CanvasVisualizer {
     const margin = 12;
     const padding = 12;
     const fontSize = 24;
+    const gravity = dialogData.gravity ?? "bottom";
 
     const height = 100;
     const width = Math.min(this.maxWidth, canvas.width - margin * 2);
 
     const offsetX = (canvas.width - margin * 2) / 2 - width / 2;
-    const offsetY = (canvas.height - margin * 2) / 2 - height / 2 + 200;
+    let offsetY;
+
+    if (gravity == "bottom") {
+      offsetY = (canvas.height - margin * 2) / 2 - height / 2 + 200;
+    } else if (gravity == "top") {
+      offsetY = margin;
+    } else {
+      offsetY = 0;
+    }
 
     context.fillStyle = "brown";
     context.fillRect(offsetX, offsetY, width, height);

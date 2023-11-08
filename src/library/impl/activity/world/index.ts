@@ -14,9 +14,8 @@ export abstract class GameWorldActivity<
   V extends LevelVisualizer<D, R> = LevelVisualizer<D, R>,
 > extends AbstractActivity<D, V> {
   public readonly modelLoader: ModelLoader;
-  private readonly levelBuilder: LevelBuilder<R>;
-  private readonly entityFactory: EntityFactory<R>;
-  private level: Nullable<Level<R>>;
+  public readonly levelBuilder: LevelBuilder<R>;
+  public readonly entityFactory: EntityFactory<R>;
 
   protected constructor(
     visualizer: V,
@@ -28,16 +27,22 @@ export abstract class GameWorldActivity<
     this.levelBuilder = levelBuilder;
     this.entityFactory = entityFactory;
     this.modelLoader = modelLoader;
-    this.level = null;
+    this._level = null;
+  }
+
+  private _level: Nullable<Level<R>>;
+
+  get level(): Level<R> {
+    return this._level!;
   }
 
   async load() {
-    this.level = await this.levelBuilder.build(
+    this._level = await this.levelBuilder.build(
       this.entityFactory,
       this.modelLoader,
     );
 
-    await this.onLevelLoaded(this.level);
+    await this.onLevelLoaded(this._level);
   }
 
   public async onLevelLoaded(level: Level<R>) {
@@ -47,41 +52,45 @@ export abstract class GameWorldActivity<
     level.attachAllEntities(payload);
 
     console.info("World info:");
-    console.info(this.level);
-
-    level.entities.forEach((entity) => {
-      if (entity instanceof DynamicEntity) {
-        entity.controller.attachToActivity(this);
-      }
-    });
+    console.info(this._level);
   }
 
-  abstract generateWorldContent(level: Level<R>): Promise<Array<Entity<R>>>;
+  public async generateWorldContent(
+    level: Level<R>,
+  ): Promise<Array<Entity<R>>> {
+    return [];
+  }
 
-  abstract generateWorldBounds(level: Level<R>): Promise<Array<Entity<R>>>;
+  public async generateWorldBounds(level: Level<R>): Promise<Array<Entity<R>>> {
+    return [];
+  }
 
   public onAttach(gameEngine: GameEngine<D>) {
     super.onAttach(gameEngine);
   }
 
   public draw(): void {
-    if (!this.level) return;
+    if (!this._level) return;
 
-    this.visualizer.display(this.level);
+    this.visualizer.display(this._level);
   }
 
   public update(): void {
-    if (!this.level) return;
+    if (!this._level) return;
 
     const game = this.requireGameEngine();
 
-    const entities = this.level.entities.sort(
+    const entities = this._level.entities.sort(
       (el, el2) => el.order - el2.order,
     );
 
     for (const entity of entities) {
       if (entity instanceof DynamicEntity) {
-        entity.controller.onUpdate(entity, this.level, game.controller);
+        if (!entity.controller.isAttached) {
+          entity.controller.attachToActivity(this);
+        }
+
+        entity.controller.onUpdate(entity, this._level, game.controller);
       }
     }
   }
