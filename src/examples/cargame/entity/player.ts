@@ -1,4 +1,3 @@
-import { PlayerController2D } from "@/library/impl/entity/controller/player";
 import { AbstractController } from "@/library/api/controller";
 import type { Nullable } from "@/library/api/model/common";
 import { Rect2D } from "@/library/api/model/rect";
@@ -10,12 +9,11 @@ import type { CanvasRenderer } from "@/library/impl/visualizer/renderer";
 import { SuperPuperMegaTripleXXXVisualizer } from "@/examples/cargame/visualizer";
 import { CarWorldActivity } from "@/examples/cargame/world";
 import { CarLevel } from "@/examples/cargame/level";
+import { MovableEntityController } from "@/library/impl/entity/controller/base";
 
-export class CarController extends PlayerController2D {
-  private _lastUpdate: number = Date.now();
-
+export class CarController extends MovableEntityController<Rect2D> {
   constructor() {
-    super(5, 10);
+    super(5);
   }
 
   public onUpdate(
@@ -26,20 +24,6 @@ export class CarController extends PlayerController2D {
     this.pinEntityToCenter(entity);
 
     super.onUpdate(entity, level, controller);
-
-    this._lastUpdate = Date.now();
-  }
-
-  public getSpeed(isRunning: boolean): number {
-    const currentTimeMillis = Date.now();
-
-    const diff = currentTimeMillis - this._lastUpdate;
-
-    if (isRunning) {
-      return (this.runPlayerSpeed * diff) / 1000;
-    } else {
-      return (this.playerSpeed * diff) / 1000;
-    }
   }
 
   public moveEntity(controller: AbstractController): Nullable<Rect2D> {
@@ -57,7 +41,7 @@ export class CarController extends PlayerController2D {
     const displacement = new Rect2D(0, 0);
 
     const isRunning = controller.isKeyPressed("shift");
-    const speed = this.getSpeed(isRunning);
+    const speed = this.getSpeed(isRunning ? 2 : 1);
 
     if (isLeft) {
       displacement.posX = -speed;

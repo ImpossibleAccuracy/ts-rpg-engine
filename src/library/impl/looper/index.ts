@@ -8,7 +8,7 @@ export class SimpleLooper extends Looper {
       if (!resume) {
         clearInterval(interval);
       }
-    }, 10);
+    }, 1);
   }
 
   startUiLooper(func: () => boolean): void {

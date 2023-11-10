@@ -1,4 +1,7 @@
 import type { Copyable } from "@/library/api/model/common";
+import { roundNumber } from "@/library/api/utils/number";
+
+const maxPrecision = 8;
 
 export class Rect implements Copyable<Rect> {
   public posX: number;
@@ -10,23 +13,40 @@ export class Rect implements Copyable<Rect> {
   }
 
   get posX2() {
-    return this.posX + this.sizeX;
-  }
-
-  public isTouch(rect: Rect): boolean {
-    return !(this.posX > rect.posX2 || rect.posX > this.posX2);
+    return roundNumber(this.posX + this.sizeX, maxPrecision);
   }
 
   public isOverlaps(rect: Rect): boolean {
-    return !(this.posX >= rect.posX2 || rect.posX >= this.posX2);
+    return !(this.posX > rect.posX2 || rect.posX > this.posX2);
   }
 
   public copy(): Rect {
     return new Rect(this.sizeX, this.posX);
   }
 
+  public fixRect(): Rect {
+    this.posX = roundNumber(this.posX, maxPrecision);
+    this.sizeX = roundNumber(this.sizeX, maxPrecision);
+
+    return this;
+  }
+
   public plusRectCoordinates(rect: Rect) {
     return new Rect(this.sizeX, this.posX + rect.posX);
+  }
+
+  public calculateDistance(rect: Rect): Rect {
+    const distancesX = [
+      this.posX - rect.posX,
+      this.posX2 - rect.posX2,
+      this.posX - rect.posX2,
+      this.posX2 - rect.posX,
+    ];
+
+    const minXAbs = Math.min(...distancesX.map((el) => Math.abs(el)));
+    const minX = distancesX.find((el) => Math.abs(el) === minXAbs)!;
+
+    return new Rect(0, roundNumber(minX, maxPrecision));
   }
 
   public calculateCoordinatesDiff(rect: Rect): Rect {
@@ -50,10 +70,10 @@ export class Rect2D extends Rect implements Copyable<Rect2D> {
   }
 
   get posY2() {
-    return this.posY + this.sizeY;
+    return roundNumber(this.posY + this.sizeY, maxPrecision);
   }
 
-  public isTouch(rect: Rect2D): boolean {
+  public isOverlaps(rect: Rect2D): boolean {
     return !(
       this.posX > rect.posX2 ||
       rect.posX > this.posX2 ||
@@ -62,20 +82,19 @@ export class Rect2D extends Rect implements Copyable<Rect2D> {
     );
   }
 
-  public isOverlaps(rect: Rect2D): boolean {
-    return !(
-      this.posX >= rect.posX2 ||
-      rect.posX >= this.posX2 ||
-      this.posY >= rect.posY2 ||
-      rect.posY >= this.posY2
-    );
-  }
-
   public copy(): Rect2D {
     return new Rect2D(this.sizeX, this.sizeY, this.posX, this.posY);
   }
 
-  public plusRectCoordinates(rect: Rect2D) {
+  public fixRect(): Rect2D {
+    super.fixRect();
+    this.posY = roundNumber(this.posY, maxPrecision);
+    this.sizeY = roundNumber(this.sizeY, maxPrecision);
+
+    return this;
+  }
+
+  public plusRectCoordinates(rect: Rect2D): Rect2D {
     return new Rect2D(
       this.sizeX,
       this.sizeY,
@@ -84,13 +103,29 @@ export class Rect2D extends Rect implements Copyable<Rect2D> {
     );
   }
 
-  public calculateCoordinatesDiff(rect: Rect2D): Rect {
+  public calculateCoordinatesDiff(rect: Rect2D): Rect2D {
     return new Rect2D(
       this.sizeX,
       this.sizeY,
       this.posX - rect.posX,
       this.posY - rect.posY,
     );
+  }
+
+  public calculateDistance(rect: Rect2D): Rect2D {
+    const s = super.calculateDistance(rect);
+
+    const distancesY = [
+      this.posY - rect.posY,
+      this.posY2 - rect.posY2,
+      this.posY - rect.posY2,
+      this.posY2 - rect.posY,
+    ];
+
+    const minYAbs = Math.min(...distancesY.map((el) => Math.abs(el)));
+    const minY = distancesY.find((el) => Math.abs(el) === minYAbs)!;
+
+    return new Rect2D(0, 0, s.posX, roundNumber(minY, 3));
   }
 }
 
@@ -112,10 +147,10 @@ export class Rect3D extends Rect2D implements Copyable<Rect3D> {
   }
 
   get posZ2() {
-    return this.posY + this.sizeY;
+    return roundNumber(this.posY + this.sizeY, maxPrecision);
   }
 
-  public isTouch(rect: Rect3D): boolean {
+  public isOverlaps(rect: Rect3D): boolean {
     return !(
       this.posX > rect.posX2 ||
       rect.posX > this.posX2 ||
@@ -123,17 +158,6 @@ export class Rect3D extends Rect2D implements Copyable<Rect3D> {
       rect.posY > this.posY2 ||
       this.posZ > rect.posZ2 ||
       rect.posZ > this.posZ2
-    );
-  }
-
-  public isOverlaps(rect: Rect3D): boolean {
-    return !(
-      this.posX >= rect.posX2 ||
-      rect.posX >= this.posX2 ||
-      this.posY >= rect.posY2 ||
-      rect.posY >= this.posY2 ||
-      this.posZ >= rect.posZ2 ||
-      rect.posZ >= this.posZ2
     );
   }
 
@@ -148,7 +172,15 @@ export class Rect3D extends Rect2D implements Copyable<Rect3D> {
     );
   }
 
-  public plusRectCoordinates(rect: Rect3D) {
+  public fixRect(): Rect2D {
+    super.fixRect();
+    this.posZ = roundNumber(this.posZ, maxPrecision);
+    this.sizeZ = roundNumber(this.sizeZ, maxPrecision);
+
+    return this;
+  }
+
+  public plusRectCoordinates(rect: Rect3D): Rect3D {
     return new Rect3D(
       this.sizeX,
       this.sizeY,
@@ -159,7 +191,23 @@ export class Rect3D extends Rect2D implements Copyable<Rect3D> {
     );
   }
 
-  public calculateCoordinatesDiff(rect: Rect3D): Rect {
+  public calculateDistance(rect: Rect3D): Rect3D {
+    const s = super.calculateDistance(rect);
+
+    const distancesZ = [
+      this.posZ - rect.posZ,
+      this.posZ2 - rect.posZ2,
+      this.posZ - rect.posZ2,
+      this.posZ2 - rect.posZ,
+    ];
+
+    const minZAbs = Math.min(...distancesZ.map((el) => Math.abs(el)));
+    const minZ = distancesZ.find((el) => Math.abs(el) === minZAbs)!;
+
+    return new Rect3D(0, 0, 0, s.posX, s.posY, roundNumber(minZ, maxPrecision));
+  }
+
+  public calculateCoordinatesDiff(rect: Rect3D): Rect3D {
     return new Rect3D(
       this.sizeX,
       this.sizeY,

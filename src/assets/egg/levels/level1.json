@@ -1,0 +1,170 @@
+{
+  "size": {
+    "w": 100,
+    "h": 30
+  },
+  "objects": {
+    "player": {
+      "controller": {
+        "name": "player",
+        "meta": {
+          "speed": 6
+        }
+      },
+      "order": 900,
+      "is_material": true,
+      "model": {
+        "type": "sprite",
+        "name": "player.png",
+        "props": {
+          "isAutomatic": false,
+          "updateRate": 200,
+          "chunkSizeX": 48,
+          "chunkSizeY": 48
+        }
+      },
+      "position": {
+        "x": 13,
+        "y": 5
+      },
+      "size": {
+        "w": 2,
+        "h": 2
+      },
+      "collision": {
+        "x": 0.7,
+        "y": 0.6,
+        "w": 0.6,
+        "h": 0.8
+      }
+    },
+    "npc": {
+      "controller": {
+        "name": "npc",
+        "meta": {
+          "speed": 2
+        }
+      },
+      "order": 900,
+      "is_material": true,
+      "model": {
+        "type": "sprite",
+        "name": "Character_001.png",
+        "props": {
+          "isAutomatic": false,
+          "updateRate": 100,
+          "chunkSizeX": 72,
+          "chunkSizeY": 72
+        }
+      },
+      "size": {
+        "w": 1.2,
+        "h": 1.5
+      },
+      "collision": {
+        "x": 0,
+        "y": 0.3,
+        "w": 1.2,
+        "h": 1.2
+      },
+      "items": [
+        {
+          "position": {
+            "x": 3,
+            "y": 5
+          }
+        }
+      ]
+    },
+    "slime": {
+      "controller": {
+        "name": "slime",
+        "meta": {
+          "speed": 2,
+          "attackDistance": 0.3
+        }
+      },
+      "order": 900,
+      "is_material": true,
+      "model": {
+        "type": "sprite",
+        "name": "slime.png",
+        "props": {
+          "isAutomatic": false,
+          "updateRate": 130,
+          "chunkSizeX": 16,
+          "chunkSizeY": 16
+        }
+      },
+      "size": {
+        "w": 0.7,
+        "h": 0.7
+      },
+      "items": [
+        {
+          "position": {
+            "x": 3,
+            "y": 5
+          }
+        }
+      ]
+    },
+    "house": {
+      "order": 800,
+      "model": {
+        "type": "model",
+        "name": "chicken_house.png"
+      },
+      "items": [
+        {
+          "is_material": true,
+          "position": {
+            "x": 7,
+            "y": 4
+          },
+          "size": {
+            "w": 2,
+            "h": 2
+          }
+        }
+      ]
+    },
+    "tree": {
+      "order": 500,
+      "is_material": true,
+      "model": {
+        "type": "sprite",
+        "name": "Trees_shadow_source.png",
+        "props": {
+          "isAutomatic": false,
+          "chunkSizeX": 64,
+          "chunkSizeY": 80
+        }
+      },
+      "size": {
+        "w": 3.2,
+        "h": 4
+      },
+      "collision": {
+        "x": 0.92,
+        "y": 3.1,
+        "w": 1.32,
+        "h": 0.6
+      },
+      "items": [
+        {
+          "position": {
+            "x": 12,
+            "y": 12
+          }
+        },
+        {
+          "position": {
+            "x": 3,
+            "y": 12
+          }
+        }
+      ]
+    }
+  }
+}

@@ -1,26 +1,11 @@
 import type {
   DynamicEntity,
   Entity,
-  EntityControllerFactory,
+  EntityControllerFactory, EntityFactory
 } from "@/library/api/model/entity";
-import { EntityController } from "@/library/api/model/entity";
 import { Rect } from "@/library/api/model/rect";
 import type { Nullable } from "@/library/api/model/common";
 import type { ModelLoader } from "@/library/api/visualizer/model";
-import { Model } from "@/library/api/visualizer/model";
-
-export interface EntityFactory<R extends Rect> {
-  buildEntity(
-    type: string,
-    controller: Nullable<EntityController<R>>,
-    model: Model,
-    isMaterial: boolean,
-    order: number,
-    rect: R,
-    modelRect: Nullable<R>,
-    collision: Nullable<R>,
-  ): Entity<R>;
-}
 
 export class Level<R extends Rect> {
   public readonly dimensions: R;

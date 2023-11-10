@@ -1,7 +1,7 @@
 import "@/assets/css/main.css";
 
 import { createApp } from "vue";
-import { createRouter, createWebHashHistory, createWebHistory } from "vue-router";
+import { createRouter, createWebHistory } from "vue-router";
 
 import App from "@/App.vue";
 import EggPage from "@/components/EggPage.vue";
@@ -11,7 +11,7 @@ import CarPage from "@/components/CarPage.vue";
 const router = createRouter({
   history: createWebHistory(),
   routes: [
-    { path: "/egg", component: EggPage },
+    { path: "/", component: EggPage },
     { path: "/car", component: CarPage },
     { path: "/:pathMatch(.*)*", component: PathNotFound },
   ],

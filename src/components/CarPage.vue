@@ -16,7 +16,7 @@ function updateCanvasSize() {
 onMounted(() => {
   const isDev = process.env.NODE_ENV == "development";
 
-  const assetsPath = isDev ? "/src/assets/" : "/assets/";
+  const assetsPath = isDev ? "/src/assets/car/" : "/assets/car/";
 
   createCarGame(canvas.value!, assetsPath);
 

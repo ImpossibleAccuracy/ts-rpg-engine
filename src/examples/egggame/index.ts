@@ -4,27 +4,23 @@ import { SimpleLooper } from "@/library/impl/looper";
 import { CanvasRenderer } from "@/library/impl/visualizer/renderer";
 import { EggWorldActivity } from "@/examples/egggame/world";
 
-export function createEggWorld(canvas: HTMLCanvasElement, assetsUrl: string) {
-  return new EggGame(canvas, assetsUrl, GameState.RUNNING);
-}
+export async function createEggWorld(
+  canvas: HTMLCanvasElement,
+  assetsUrl: string,
+  isDeveloperMode: boolean = false,
+) {
+  const renderer = new CanvasRenderer(canvas);
+  const controller = new MouseKeyboardController();
+  const looper = new SimpleLooper();
 
-export class EggGame extends GameEngine<CanvasRenderer> {
-  constructor(canvas: HTMLCanvasElement, assetsUrl: string, state: GameState) {
-    const renderer = new CanvasRenderer(canvas);
+  const startActivity = EggWorldActivity.build(
+    renderer,
+    assetsUrl,
+    "levels/level1.json",
+    isDeveloperMode,
+  );
 
-    const startActivity = new EggWorldActivity(
-      assetsUrl,
-      "levels/level1.json",
-      renderer,
-    );
+  await startActivity.load();
 
-    startActivity.load();
-
-    super(
-      new MouseKeyboardController(),
-      new SimpleLooper(),
-      startActivity,
-      state,
-    );
-  }
+  return new GameEngine(controller, looper, startActivity, GameState.RUNNING);
 }

@@ -1,6 +1,5 @@
 import { Level } from "@/library/api/level";
 import { Rect, Rect2D } from "@/library/api/model/rect";
-import { ColorModel } from "@/library/impl/models";
 import { AbstractVisualizer, LevelVisualizer } from "@/library/api/visualizer";
 import type { CanvasRenderer } from "@/library/impl/visualizer/renderer";
 
@@ -31,19 +30,18 @@ export class FullMapCanvasVisualizer extends LevelVisualizer<
     const objects = level.entities;
 
     for (const entity of objects) {
-      const model = entity.model;
-      const modelRect = entity.getModelRect();
+      const modelRect = entity.rect;
 
-      this.renderer.drawModel(
-        model,
-        modelRect.posX / wMultiplier,
-        modelRect.posY / hMultiplier,
-        modelRect.sizeX / wMultiplier,
-        modelRect.sizeY / hMultiplier,
-      );
+      for (const model of entity.models) {
+        this.renderer.drawModel(
+          model,
+          modelRect.posX / wMultiplier,
+          modelRect.posY / hMultiplier,
+          modelRect.sizeX / wMultiplier,
+          modelRect.sizeY / hMultiplier,
+        );
+      }
     }
-
-    this.renderer.save();
   }
 }
 
@@ -51,8 +49,8 @@ export class RPGCanvasVisualizer extends LevelVisualizer<
   CanvasRenderer,
   Rect2D
 > {
+  public isDebugMode: boolean;
   private readonly blockSizePx: number = 48;
-  private readonly isDebugMode: boolean;
 
   constructor(renderer: CanvasRenderer, isDebugMode: boolean = false) {
     super(renderer);
@@ -69,22 +67,31 @@ export class RPGCanvasVisualizer extends LevelVisualizer<
       .sort((el1, el2) => el2.order - el1.order);
 
     for (const entity of objects) {
-      const model = entity.model;
-      const modelRect = entity.getModelRect();
+      const modelRect = entity.rect;
 
-      this.renderer.drawModel(
-        model,
-        (modelRect.posX - cameraRect.posX) * this.blockSizePx,
-        (modelRect.posY - cameraRect.posY) * this.blockSizePx,
-        modelRect.sizeX * this.blockSizePx,
-        modelRect.sizeY * this.blockSizePx,
-      );
+      for (const model of entity.models) {
+        this.renderer.drawModel(
+          model,
+          (modelRect.posX - cameraRect.posX) * this.blockSizePx,
+          (modelRect.posY - cameraRect.posY) * this.blockSizePx,
+          modelRect.sizeX * this.blockSizePx,
+          modelRect.sizeY * this.blockSizePx,
+        );
+      }
 
       if (this.isDebugMode) {
         const collisionRect = entity.getCollisionRect();
 
         this.renderer.context.fillStyle = "rgba(255, 255, 0, 0.3)";
         this.renderer.context.fillRect(
+          (collisionRect.posX - cameraRect.posX) * this.blockSizePx,
+          (collisionRect.posY - cameraRect.posY) * this.blockSizePx,
+          collisionRect.sizeX * this.blockSizePx,
+          collisionRect.sizeY * this.blockSizePx,
+        );
+
+        this.renderer.context.strokeStyle = "rgb(0, 0, 0)";
+        this.renderer.context.strokeRect(
           (collisionRect.posX - cameraRect.posX) * this.blockSizePx,
           (collisionRect.posY - cameraRect.posY) * this.blockSizePx,
           collisionRect.sizeX * this.blockSizePx,
@@ -98,6 +105,16 @@ export class RPGCanvasVisualizer extends LevelVisualizer<
           entity.rect.sizeX * this.blockSizePx,
           entity.rect.sizeY * this.blockSizePx,
         );
+
+        this.renderer.context.strokeStyle = "rgb(255, 255, 255)";
+        this.renderer.context.strokeRect(
+          (entity.rect.posX - cameraRect.posX) * this.blockSizePx,
+          (entity.rect.posY - cameraRect.posY) * this.blockSizePx,
+          entity.rect.sizeX * this.blockSizePx,
+          entity.rect.sizeY * this.blockSizePx,
+        );
+
+        this.renderer.context.strokeStyle = "none";
       }
     }
 

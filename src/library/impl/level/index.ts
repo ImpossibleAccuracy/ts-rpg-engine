@@ -1,6 +1,6 @@
 import { CompositeRect2D, Rect2D } from "@/library/api/model/rect";
 import { Model, ModelLoader } from "@/library/api/visualizer/model";
-import { AssetsLevelBuilder, type EntityFactory } from "@/library/api/level";
+import { AssetsLevelBuilder } from "@/library/api/level";
 import type {
   CollisionType,
   ControllerJson,
@@ -16,14 +16,17 @@ import {
   instanceOfEntity,
   instanceOfEntityCollection,
   instanceOfModel,
+  instanceOfModelArray,
   instanceOfSpriteModel,
 } from "@/library/impl/level/data";
-import {
+import type {
   Entity,
   EntityController,
-  type EntityControllerFactory,
+  EntityControllerFactory,
+  EntityFactory,
 } from "@/library/api/model/entity";
 import type { Nullable } from "@/library/api/model/common";
+import { mergeDeep } from "@/library/api/utils/object";
 
 export class AssetsLevelBuilder2D extends AssetsLevelBuilder<
   Rect2D,
@@ -36,7 +39,7 @@ export class AssetsLevelBuilder2D extends AssetsLevelBuilder<
     super(path, controllers);
   }
 
-  calculateLevelDimensions(json: LevelJson): Rect2D {
+  public calculateLevelDimensions(json: LevelJson): Rect2D {
     return new Rect2D(json.size.w, json.size.h);
   }
 
@@ -51,9 +54,16 @@ export class AssetsLevelBuilder2D extends AssetsLevelBuilder<
       const key = obj[0];
       const value = obj[1];
 
+      if (value.attach === false) continue;
+
       if (instanceOfEntity(value)) {
+        // FIXME: duplicate code
         if (!value.model) {
           throw new Error("Entity model must be specified");
+        }
+
+        if (!value.size) {
+          throw new Error("Entity size must be specified");
         }
 
         const item = await this.buildEntity(
@@ -72,7 +82,18 @@ export class AssetsLevelBuilder2D extends AssetsLevelBuilder<
         result.push(item);
       } else if (instanceOfEntityCollection(value)) {
         for (const valueElement of value.items) {
-          const data = Object.assign({}, valueElement, value);
+          if (valueElement.attach === false) continue;
+
+          const data = mergeDeep({}, value, valueElement);
+
+          // FIXME: duplicate code
+          if (!data.model) {
+            throw new Error("Entity model must be specified");
+          }
+
+          if (!data.size) {
+            throw new Error("Entity size must be specified");
+          }
 
           const item = await this.buildEntity(
             key,
@@ -109,27 +130,22 @@ export class AssetsLevelBuilder2D extends AssetsLevelBuilder<
   ): Promise<Entity<Rect2D>> {
     const rect = new Rect2D(size.w, size.h, position.x, position.y);
 
-    const model = await this.loadModel(modelInfo, modelLoader);
-
-    const modelRect = modelInfo.model_dimensions
-      ? this.parseRect(modelInfo.model_dimensions)
-      : null;
-
     const collision = collisionInfo ? this.parseCollision(collisionInfo) : null;
 
     const controller = controllerInfo
       ? this.parseController(controllerInfo)
       : null;
 
+    const models = await this.parseModels(modelInfo, modelLoader);
+
     return entityFactory.buildEntity(
       type,
-      controller,
-      model,
+      models,
       isMaterial,
       order,
       rect,
-      modelRect,
       collision,
+      controller,
     );
   }
 
@@ -152,7 +168,39 @@ export class AssetsLevelBuilder2D extends AssetsLevelBuilder<
     }
   }
 
-  private loadModel(
+  private parseController(
+    controller: ControllerType,
+  ): EntityController<Rect2D> {
+    if (typeof controller === "string") {
+      return this.createController(controller as string);
+    } else {
+      const data = controller as ControllerJson;
+
+      return this.createController(data.name, data.meta);
+    }
+  }
+
+  private async parseModels(
+    modelJson: ModelType,
+    modelLoader: ModelLoader,
+  ): Promise<Array<Model>> {
+    if (modelJson instanceof Array) {
+      const promises = modelJson.map((el) => this.createModel(el, modelLoader));
+
+      return await Promise.all(promises);
+    } else if (instanceOfModelArray(modelJson)) {
+      const promises = modelJson.items.map((el) =>
+        this.createModel(el, modelLoader),
+      );
+
+      return await Promise.all(promises);
+    } else {
+      const model = await this.createModel(modelJson, modelLoader);
+      return [model];
+    }
+  }
+
+  private createModel(
     modelJson: ModelType,
     modelLoader: ModelLoader,
   ): Promise<Model> {
@@ -171,19 +219,7 @@ export class AssetsLevelBuilder2D extends AssetsLevelBuilder<
         modelJson.metadata,
       );
     } else {
-      throw new Error("Invalid data value");
-    }
-  }
-
-  private parseController(
-    controller: ControllerType,
-  ): EntityController<Rect2D> {
-    if (typeof controller === "string") {
-      return this.createController(controller as string);
-    } else {
-      const data = controller as ControllerJson;
-
-      return this.createController(data.name, data.meta);
+      throw new Error("Unknown model type");
     }
   }
 
@@ -197,6 +233,14 @@ export class AssetsLevelBuilder2D extends AssetsLevelBuilder<
       throw new Error(`Entity controller "${controllerName}" not found`);
     }
 
-    return controllerCreator(controllerParams);
+    if (controllerParams) {
+      if (controllerParams instanceof Array) {
+        return controllerCreator(...controllerParams);
+      } else {
+        return controllerCreator(controllerParams);
+      }
+    } else {
+      return controllerCreator();
+    }
   }
 }

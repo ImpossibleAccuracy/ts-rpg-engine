@@ -33,22 +33,27 @@ export abstract class SpriteModel<
   }
 
   public tryNextSprite() {
-    if (this.tryDrawNextSprite()) {
+    if (this.canDrawNextSprite()) {
       this.setActiveItem(this.activeItem + 1);
     }
   }
 
   abstract getMaxItem(): number;
 
-  protected tryDrawNextSprite(): boolean {
+  protected canDrawNextSprite(speedMultiplier?: number): boolean {
     const data = this.spriteMetadata;
     const currentTimeMillis = Date.now();
+
+    speedMultiplier = speedMultiplier ?? 1;
 
     if (data.updateRate && data.updateRate > 0) {
       if (!data.lastDraw || data.lastDraw < 0) {
         data.lastDraw = currentTimeMillis;
-      } else if (currentTimeMillis - data.lastDraw >= data.updateRate) {
-        data.lastDraw += data.updateRate;
+      } else if (
+        currentTimeMillis - data.lastDraw >=
+        data.updateRate / speedMultiplier
+      ) {
+        data.lastDraw += data.updateRate / speedMultiplier;
         return true;
       }
     }

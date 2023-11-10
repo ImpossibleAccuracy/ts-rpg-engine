@@ -1,5 +1,6 @@
 import type { SpriteMetaData } from "@/library/api/visualizer/model";
-import type { SpriteImageMetaData } from "@/library/impl/models";
+
+import type { SpriteImageMetaData } from "@/library/impl/models/spriteImageModel";
 
 export interface CoordinatesJson {
   x: number;
@@ -16,29 +17,43 @@ export type RectJson = CoordinatesJson & DimensionsJson;
 export type CollisionType = RectJson | Array<RectJson>;
 
 interface BaseModelJson {
-  type?: string;
-  metadata?: unknown;
-  model_dimensions?: RectJson;
+  type: string;
 }
 
-export interface ModelJson extends BaseModelJson {
-  type: "model" | undefined;
+interface BaseSingleModelJson extends BaseModelJson {
+  metadata?: unknown;
+}
+
+export interface ModelJson extends BaseSingleModelJson {
+  type: "model";
   name: string;
 }
 
-export interface SpriteModelJson extends BaseModelJson {
+export interface SpriteModelJson extends BaseSingleModelJson {
   type: "sprite";
   name: string;
   props?: SpriteImageMetaData;
 }
 
-export interface ArraySpriteModelJson extends BaseModelJson {
+export interface ArraySpriteModelJson extends BaseSingleModelJson {
   type: "sprite_array";
   items: Array<string>;
   props?: SpriteMetaData;
 }
 
-export type ModelType = ModelJson | SpriteModelJson | ArraySpriteModelJson;
+export type SingleModelType =
+  | ModelJson
+  | SpriteModelJson
+  | ArraySpriteModelJson;
+
+export interface ModelsArrayJson extends BaseModelJson {
+  items: Array<SingleModelType>;
+}
+
+export type ModelType =
+  | Array<SingleModelType>
+  | ModelsArrayJson
+  | SingleModelType;
 
 export interface ControllerJson {
   name: string;
@@ -47,19 +62,21 @@ export interface ControllerJson {
 
 export type ControllerType = string | ControllerJson;
 
-export interface EntityJson {
+export interface BaseEntityJson {
+  attach?: boolean;
+  order: number;
   model?: ModelType;
   is_material?: boolean;
-  position: CoordinatesJson;
-  size: DimensionsJson;
-  order: number;
   collision?: CollisionType;
   controller?: ControllerType;
+  size?: DimensionsJson;
 }
 
-export interface EntityCollectionJson {
-  order: number;
-  model: ModelType;
+export interface EntityJson extends BaseEntityJson {
+  position: CoordinatesJson;
+}
+
+export interface EntityCollectionJson extends BaseEntityJson {
   items: Array<EntityJson>;
 }
 
@@ -69,13 +86,13 @@ export interface LevelJson {
 }
 
 export function instanceOfModel(object: object): object is ModelJson {
-  return (!("type" in object) || object.type == "model") && "name" in object;
+  return "type" in object && object.type == "model" && "name" in object;
 }
 
 export function instanceOfSpriteModel(
   object: object,
 ): object is SpriteModelJson {
-  return "name" in object && "type" in object && object.type == "sprite";
+  return "type" in object && object.type == "sprite" && "name" in object;
 }
 
 export function instanceOfArraySpriteModel(
@@ -84,12 +101,18 @@ export function instanceOfArraySpriteModel(
   return "type" in object && object.type == "sprite_array" && "items" in object;
 }
 
+export function instanceOfModelArray(
+  object: object,
+): object is ModelsArrayJson {
+  return "type" in object && object.type == "model_array";
+}
+
 export function instanceOfEntity(object: object): object is EntityJson {
-  return "position" in object && "size" in object && "order" in object;
+  return "position" in object;
 }
 
 export function instanceOfEntityCollection(
   object: object,
 ): object is EntityCollectionJson {
-  return "model" in object && "items" in object;
+  return "items" in object;
 }

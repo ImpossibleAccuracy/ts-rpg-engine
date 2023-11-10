@@ -47,48 +47,21 @@ export abstract class EntityController<R extends Rect> {
 }
 
 export type EntityControllerFactory<R extends Rect> = (
-  data?: unknown,
+  ...data: Array<any>
 ) => EntityController<R>;
 
 export abstract class Entity<R extends Rect> {
-  public readonly type: string;
-  public model: Model;
-  public isMaterial: boolean;
-  public order: number;
-
-  public rect: R;
-  public modelRect: Nullable<R>;
-  public collision: Nullable<R>;
-
   protected constructor(
-    type: string,
-    model: Model,
-    isMaterial: boolean,
-    order: number,
-    rect: R,
-    modelRect: Nullable<R> = null,
-    collision: Nullable<R> = null,
-  ) {
-    this.type = type;
-    this.model = model;
-    this.isMaterial = isMaterial;
-    this.order = order;
-    this.rect = rect;
-    this.modelRect = modelRect;
-    this.collision = collision;
-  }
+    public readonly type: string,
+    public models: Array<Model>,
+    public isMaterial: boolean,
+    public order: number,
+    public rect: R,
+    public collision: Nullable<R>,
+  ) {}
 
-  public isTouch(entity: Entity<R>): boolean {
-    const collision1 = this.getCollisionRect();
-    const collision2 = entity.getCollisionRect();
-
-    return collision1.isTouch(collision2);
-  }
-
-  public isTouchRect(rect: R): boolean {
-    const collision1 = this.getCollisionRect();
-
-    return collision1.isTouch(rect);
+  public get primaryModel(): Model {
+    return this.models[0];
   }
 
   public isOverlaps(entity: Entity<R>): boolean {
@@ -104,14 +77,6 @@ export abstract class Entity<R extends Rect> {
     return collision1.isOverlaps(rect);
   }
 
-  public getModelRect(): R {
-    if (this.modelRect) {
-      return this.modelRect.plusRectCoordinates(this.rect) as R;
-    }
-
-    return this.rect;
-  }
-
   public getCollisionRect(): R {
     if (this.collision) {
       return this.collision.plusRectCoordinates(this.rect) as R;
@@ -124,31 +89,38 @@ export abstract class Entity<R extends Rect> {
 export class StaticEntity<R extends Rect> extends Entity<R> {
   constructor(
     type: string,
-    model: Model,
+    models: Array<Model>,
     isMaterial: boolean,
     order: number,
     rect: R,
-    modelRect: Nullable<R>,
-    collision: Nullable<R> = null,
+    collision: Nullable<R>,
   ) {
-    super(type, model, isMaterial, order, rect, modelRect, collision);
+    super(type, models, isMaterial, order, rect, collision);
   }
 }
 
 export class DynamicEntity<R extends Rect> extends Entity<R> {
-  public controller: EntityController<R>;
-
   constructor(
     type: string,
-    controller: EntityController<R>,
-    model: Model,
+    public controller: EntityController<R>,
+    models: Array<Model>,
     isMaterial: boolean,
     order: number,
     rect: R,
-    modelRect: Nullable<R>,
-    collision: Nullable<R> = null,
+    collision: Nullable<R>,
   ) {
-    super(type, model, isMaterial, order, rect, modelRect, collision);
-    this.controller = controller;
+    super(type, models, isMaterial, order, rect, collision);
   }
+}
+
+export interface EntityFactory<R extends Rect> {
+  buildEntity(
+    type: string,
+    model: Array<Model> | Model,
+    isMaterial: boolean,
+    order: number,
+    rect: R,
+    collision: Nullable<R>,
+    controller: Nullable<EntityController<R>>,
+  ): Entity<R>;
 }

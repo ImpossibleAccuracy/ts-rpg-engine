@@ -1,5 +1,6 @@
 import { AbstractRenderer, AbstractVisualizer } from "@/library/api/visualizer";
 import type { GameEngine } from "@/library/api/engine";
+import type { AbstractController } from "@/library/api/controller";
 
 export abstract class AbstractActivity<
   D extends AbstractRenderer,
@@ -11,6 +12,10 @@ export abstract class AbstractActivity<
 
   protected constructor(visualizer: V) {
     this.visualizer = visualizer;
+  }
+
+  public get controller(): AbstractController {
+    return this.requireGameEngine().controller;
   }
 
   public get isFinished(): boolean {

@@ -2,10 +2,11 @@ import { AbstractRenderer } from "@/library/api/visualizer";
 import type { Model } from "@/library/api/visualizer/model";
 import { SpriteArrayModel, SpriteModel } from "@/library/api/visualizer/model";
 import {
-  ColorModel,
   ImageModel,
-  SpriteImageModel,
-} from "@/library/impl/models";
+
+} from "@/library/impl/models/imageModel";
+import { ColorModel } from "@/library/impl/models/colorModel";
+import { SpriteImageModel } from "@/library/impl/models/spriteImageModel";
 
 export class CanvasRenderer extends AbstractRenderer {
   public readonly canvas: HTMLCanvasElement;
@@ -40,13 +41,11 @@ export class CanvasRenderer extends AbstractRenderer {
         const activeRow = model.activeRow;
 
         const sx = model.spriteMetadata.spriteOffsetX
-          ? chunkSizeX * activeCol +
-            model.spriteMetadata.spriteOffsetX * (activeCol + 1)
+          ? model.spriteMetadata.spriteOffsetX + chunkSizeX * activeCol
           : chunkSizeX * activeCol;
 
         const sy = model.spriteMetadata.spriteOffsetY
-          ? chunkSizeY * activeRow +
-            model.spriteMetadata.spriteOffsetY * (activeRow + 1)
+          ? model.spriteMetadata.spriteOffsetY + chunkSizeY * activeRow
           : chunkSizeY * activeRow;
 
         const sw = model.spriteMetadata.spriteWidth

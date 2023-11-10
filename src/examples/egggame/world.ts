@@ -1,29 +1,61 @@
 import { GameWorldActivity } from "@/library/impl/activity/world";
-import type { CanvasRenderer } from "@/library/impl/visualizer/renderer";
-import type { Level } from "@/library/api/level";
+import { CanvasRenderer } from "@/library/impl/visualizer/renderer";
+import type { Level, LevelBuilder } from "@/library/api/level";
 import { Rect2D } from "@/library/api/model/rect";
 import { DefaultEntityFactory } from "@/library/impl/entity/factory";
 import { AssetsLevelBuilder2D } from "@/library/impl/level";
-import { ColorModelLoader, ImageModelLoader } from "@/library/impl/models";
+import { ImageModelLoader } from "@/library/impl/models/imageModel";
 import { RPGCanvasVisualizer } from "@/library/impl/visualizer/world";
-import { EggPlayerController } from "@/examples/egggame/entity";
-import type { Entity } from "@/library/api/model/entity";
-import { StaticEntity } from "@/library/api/model/entity";
-import { randomInteger } from "@/library/api/utils/random";
+import { EggPlayerController } from "@/examples/egggame/entity/player";
+import type { Entity, EntityFactory } from "@/library/api/model/entity";
+import type { LevelVisualizer } from "@/library/api/visualizer";
+import type { ModelLoader } from "@/library/api/visualizer/model";
+import {
+  GoblinController,
+  SlimeController,
+  WraithController,
+} from "@/examples/egggame/entity/enemy";
+import { SimpleNpcController } from "@/examples/egggame/entity/npc";
 
-export class EggWorldActivity extends GameWorldActivity<CanvasRenderer> {
+import { ColorModelLoader } from "@/library/impl/models/colorModel";
+
+export class EggWorldActivity extends GameWorldActivity<
+  CanvasRenderer,
+  Rect2D
+> {
   private readonly wallWeight: number = 1;
 
-  constructor(assetsUrl: string, levelPath: string, renderer: CanvasRenderer) {
-    const entityFactory = new DefaultEntityFactory();
+  constructor(
+    visualizer: LevelVisualizer<CanvasRenderer, Rect2D>,
+    levelBuilder: LevelBuilder<Rect2D>,
+    entityFactory: EntityFactory<Rect2D>,
+    modelLoader: ModelLoader,
+  ) {
+    super(visualizer, levelBuilder, entityFactory, modelLoader);
+  }
+
+  public static build(
+    renderer: CanvasRenderer,
+    assetsUrl: string,
+    levelPath: string,
+    isDeveloperMode: boolean = false,
+  ) {
+    const controllers = {
+      player: (data?: any) => new EggPlayerController(data?.speed),
+      npc: (data?: any) => new SimpleNpcController(data?.speed),
+      slime: (data?: any) =>
+        new SlimeController(data?.speed, data?.attackDistance),
+      goblin: (data?: any) =>
+        new GoblinController(data?.speed, data?.attackDistance),
+      wraith: (data?: any) =>
+        new WraithController(data?.speed, data?.attackDistance),
+    };
+
+    const entityFactory = new DefaultEntityFactory<Rect2D>();
 
     const levelBuilder = new AssetsLevelBuilder2D(
       assetsUrl + levelPath,
-      new Map(
-        Object.entries({
-          player: () => new EggPlayerController(),
-        }),
-      ),
+      new Map(Object.entries(controllers)),
     );
 
     const fallbackModelLoader = new ColorModelLoader();
@@ -32,9 +64,20 @@ export class EggWorldActivity extends GameWorldActivity<CanvasRenderer> {
       fallbackModelLoader,
     );
 
-    const visualizer = new RPGCanvasVisualizer(renderer, false);
+    const visualizer = new RPGCanvasVisualizer(renderer, isDeveloperMode);
 
-    super(visualizer, levelBuilder, entityFactory, modelLoader);
+    window.addEventListener("keydown", (e) => {
+      if (e.ctrlKey) {
+        visualizer.isDebugMode = !visualizer.isDebugMode;
+      }
+    });
+
+    return new EggWorldActivity(
+      visualizer,
+      levelBuilder,
+      entityFactory,
+      modelLoader,
+    );
   }
 
   public async onLevelLoaded(level: Level<Rect2D>) {
@@ -51,45 +94,49 @@ export class EggWorldActivity extends GameWorldActivity<CanvasRenderer> {
     const mapSizeY = level.dimensions.sizeY;
 
     const wallModel = await this.modelLoader.load("black");
-    const groundModel = await this.modelLoader.load("yellowgreen");
+    const groundModel = await this.modelLoader.load("#b9bd1c");
 
-    const top = new StaticEntity(
+    const top = this.entityFactory.buildEntity(
       "map_bounds_wall",
       wallModel,
       true,
       50,
       new Rect2D(mapSizeX, this.wallWeight, 0, 0),
       null,
+      null,
     );
 
-    const bottom = new StaticEntity(
+    const bottom = this.entityFactory.buildEntity(
       "map_bounds_wall",
       wallModel,
       true,
       50,
       new Rect2D(mapSizeX, this.wallWeight, 0, mapSizeY - this.wallWeight),
       null,
+      null,
     );
 
-    const left = new StaticEntity(
+    const left = this.entityFactory.buildEntity(
       "map_bounds_wall",
       wallModel,
       true,
       50,
       new Rect2D(this.wallWeight, mapSizeY, 0, 0),
       null,
+      null,
     );
 
-    const right = new StaticEntity(
+    const right = this.entityFactory.buildEntity(
       "map_bounds_wall",
       wallModel,
       true,
       50,
       new Rect2D(this.wallWeight, mapSizeY, mapSizeX - this.wallWeight, 0),
       null,
+      null,
     );
 
-    const ground = new StaticEntity(
+    const ground = this.entityFactory.buildEntity(
       "map_ground",
       groundModel,
       false,
@@ -101,6 +148,7 @@ export class EggWorldActivity extends GameWorldActivity<CanvasRenderer> {
         this.wallWeight,
       ),
       null,
+      null,
     );
 
     return [top, bottom, left, right, ground];
@@ -111,7 +159,7 @@ export class EggWorldActivity extends GameWorldActivity<CanvasRenderer> {
   ): Promise<Array<Entity<Rect2D>>> {
     const result = new Array<Entity<Rect2D>>();
 
-    const eggModel = await this.modelLoader.load("egg.png");
+    /*const eggModel = await this.modelLoader.load("egg.png");
     const houseModel = await this.modelLoader.load("chicken_house.png");
 
     const defaultEggRect = new Rect2D(0.5, 0.5);
@@ -132,7 +180,7 @@ export class EggWorldActivity extends GameWorldActivity<CanvasRenderer> {
         ),
       );
 
-      const house = new StaticEntity(
+      const house = this.entityFactory.buildEntity(
         "chicken_house",
         houseModel,
         true,
@@ -150,7 +198,7 @@ export class EggWorldActivity extends GameWorldActivity<CanvasRenderer> {
         eggPosition.posX += randomInteger(5, 8);
         eggPosition.posY += randomInteger(5, 8);
 
-        const egg = new StaticEntity(
+        const egg = this.entityFactory.buildEntity(
           "egg",
           eggModel,
           true,
@@ -161,7 +209,7 @@ export class EggWorldActivity extends GameWorldActivity<CanvasRenderer> {
 
         result.push(egg);
       }
-    }
+    }*/
 
     return result;
   }

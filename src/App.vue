@@ -1,12 +1,12 @@
 <template>
   <main>
-    <button
-      @click="
-        $route.path === '/egg' ? $router.push('/car') : $router.push('/egg')
-      "
-    >
-      toggle
-    </button>
+<!--    <button-->
+<!--      @click="-->
+<!--        $route.path === '/egg' ? $router.push('/car') : $router.push('/egg')-->
+<!--      "-->
+<!--    >-->
+<!--      toggle-->
+<!--    </button>-->
 
     <router-view class="content" />
   </main>
