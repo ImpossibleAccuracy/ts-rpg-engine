@@ -1,7 +1,7 @@
 {
   "size": {
     "w": 100,
-    "h": 30
+    "h": 100
   },
   "objects": {
     "player": {
@@ -15,17 +15,17 @@
       "is_material": true,
       "model": {
         "type": "sprite",
-        "name": "player.png",
+        "name": "entity/player/player.png",
         "props": {
           "isAutomatic": false,
           "updateRate": 200,
-          "chunkSizeX": 48,
-          "chunkSizeY": 48
+          "chunkSizeX": 192,
+          "chunkSizeY": 192
         }
       },
       "position": {
-        "x": 13,
-        "y": 5
+        "x": 50,
+        "y": 50
       },
       "size": {
         "w": 2,
@@ -39,6 +39,7 @@
       }
     },
     "npc": {
+      "attach": false,
       "controller": {
         "name": "npc",
         "meta": {
@@ -77,6 +78,7 @@
       ]
     },
     "slime": {
+      "attach": false,
       "controller": {
         "name": "slime",
         "meta": {
@@ -105,63 +107,6 @@
           "position": {
             "x": 3,
             "y": 5
-          }
-        }
-      ]
-    },
-    "house": {
-      "order": 800,
-      "model": {
-        "type": "model",
-        "name": "chicken_house.png"
-      },
-      "items": [
-        {
-          "is_material": true,
-          "position": {
-            "x": 7,
-            "y": 4
-          },
-          "size": {
-            "w": 2,
-            "h": 2
-          }
-        }
-      ]
-    },
-    "tree": {
-      "order": 500,
-      "is_material": true,
-      "model": {
-        "type": "sprite",
-        "name": "Trees_shadow_source.png",
-        "props": {
-          "isAutomatic": false,
-          "chunkSizeX": 64,
-          "chunkSizeY": 80
-        }
-      },
-      "size": {
-        "w": 3.2,
-        "h": 4
-      },
-      "collision": {
-        "x": 0.92,
-        "y": 3.1,
-        "w": 1.32,
-        "h": 0.6
-      },
-      "items": [
-        {
-          "position": {
-            "x": 12,
-            "y": 12
-          }
-        },
-        {
-          "position": {
-            "x": 3,
-            "y": 12
           }
         }
       ]

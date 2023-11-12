@@ -1,4 +1,4 @@
-import type { Copyable } from "@/library/api/model/common";
+import type { Copyable } from "@/library/api/data/common";
 import { roundNumber } from "@/library/api/utils/number";
 
 const maxPrecision = 8;

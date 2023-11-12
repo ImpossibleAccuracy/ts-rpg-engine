@@ -2,7 +2,7 @@ import {
   DefaultSpriteMetaData,
   type SpriteMetaData,
   SpriteModel,
-} from "@/library/api/visualizer/model";
+} from "@/library/api/models/spriteModel";
 
 export interface SpriteImageMetaData extends SpriteMetaData {
   chunkSizeX: number;
@@ -28,11 +28,13 @@ export class DefaultSpriteImageMetaData extends DefaultSpriteMetaData {
 }
 
 export class SpriteImageModel extends SpriteModel<SpriteImageMetaData> {
-  public readonly image: HTMLImageElement;
   public cols: number;
   public rows: number;
 
-  constructor(image: HTMLImageElement, spriteMetadata: SpriteImageMetaData) {
+  constructor(
+    public readonly image: HTMLImageElement,
+    spriteMetadata: SpriteImageMetaData,
+  ) {
     super(spriteMetadata, 0);
     this.image = image;
 
@@ -42,13 +44,13 @@ export class SpriteImageModel extends SpriteModel<SpriteImageMetaData> {
     this._activeRow = spriteMetadata.defaultActiveRow ?? 0;
     this._activeCol = spriteMetadata.defaultActiveCol ?? 0;
 
-    image.addEventListener("load", () => {
+    image.onload = () => {
       const sizeX = this.spriteMetadata.chunkSizeX;
       const sizeY = this.spriteMetadata.chunkSizeY;
 
       this.cols = Math.floor(this.image.width / sizeX);
       this.rows = Math.floor(this.image.height / sizeY);
-    });
+    };
   }
 
   private _activeRow: number = 0;

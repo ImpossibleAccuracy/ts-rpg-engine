@@ -1,9 +1,9 @@
 import { Level } from "@/library/api/level";
 import { MovableEntityController } from "@/library/impl/entity/controller/base";
-import { Rect2D } from "@/library/api/model/rect";
+import { Rect2D } from "@/library/api/data/rect";
 import { AbstractController } from "@/library/api/controller";
-import type { Nullable } from "@/library/api/model/common";
-import { DynamicEntity, Entity } from "@/library/api/model/entity";
+import type { Nullable } from "@/library/api/data/common";
+import { DynamicEntity, Entity } from "@/library/api/data/entity";
 import type { AnimationStateItem } from "@/library/impl/entity/animator";
 import {
   type MovableAnimationStates,

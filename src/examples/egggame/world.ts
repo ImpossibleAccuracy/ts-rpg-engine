@@ -1,15 +1,14 @@
 import { GameWorldActivity } from "@/library/impl/activity/world";
 import { CanvasRenderer } from "@/library/impl/visualizer/renderer";
-import type { Level, LevelBuilder } from "@/library/api/level";
-import { Rect2D } from "@/library/api/model/rect";
+import { Level, LevelBuilder } from "@/library/api/level";
+import { Rect2D } from "@/library/api/data/rect";
 import { DefaultEntityFactory } from "@/library/impl/entity/factory";
 import { AssetsLevelBuilder2D } from "@/library/impl/level";
-import { ImageModelLoader } from "@/library/impl/models/imageModel";
 import { RPGCanvasVisualizer } from "@/library/impl/visualizer/world";
 import { EggPlayerController } from "@/examples/egggame/entity/player";
-import type { Entity, EntityFactory } from "@/library/api/model/entity";
-import type { LevelVisualizer } from "@/library/api/visualizer";
-import type { ModelLoader } from "@/library/api/visualizer/model";
+import type { EntityFactory } from "@/library/api/data/entity";
+import { Entity } from "@/library/api/data/entity";
+import { LevelVisualizer } from "@/library/api/visualizer";
 import {
   GoblinController,
   SlimeController,
@@ -17,13 +16,19 @@ import {
 } from "@/examples/egggame/entity/enemy";
 import { SimpleNpcController } from "@/examples/egggame/entity/npc";
 
-import { ColorModelLoader } from "@/library/impl/models/colorModel";
+import { ColorModelLoader } from "@/library/impl/models/loaders/colorModelLoader";
+import { AssetModelLoader } from "@/library/impl/models/loaders/assetModelLoader";
+import { ModelLoader } from "@/library/impl/models/loaders";
+import type { TilesetItem } from "@/library/impl/models/tilesetModel";
 
 export class EggWorldActivity extends GameWorldActivity<
   CanvasRenderer,
   Rect2D
 > {
   private readonly wallWeight: number = 1;
+  private readonly paddingX: number = 20;
+  private readonly paddingY: number = 20;
+  private readonly wallInset = 0.5;
 
   constructor(
     visualizer: LevelVisualizer<CanvasRenderer, Rect2D>,
@@ -59,18 +64,20 @@ export class EggWorldActivity extends GameWorldActivity<
     );
 
     const fallbackModelLoader = new ColorModelLoader();
-    const modelLoader = new ImageModelLoader(
+    const modelLoader = new AssetModelLoader(
       assetsUrl + "image/",
       fallbackModelLoader,
     );
 
-    const visualizer = new RPGCanvasVisualizer(renderer, isDeveloperMode);
+    const visualizer = new RPGCanvasVisualizer(renderer);
 
-    window.addEventListener("keydown", (e) => {
-      if (e.ctrlKey) {
-        visualizer.isDebugMode = !visualizer.isDebugMode;
-      }
-    });
+    if (isDeveloperMode) {
+      window.addEventListener("keydown", (e) => {
+        if (e.ctrlKey) {
+          visualizer.isDebugMode = !visualizer.isDebugMode;
+        }
+      });
+    }
 
     return new EggWorldActivity(
       visualizer,
@@ -80,21 +87,13 @@ export class EggWorldActivity extends GameWorldActivity<
     );
   }
 
-  public async onLevelLoaded(level: Level<Rect2D>) {
-    await super.onLevelLoaded(level);
-
-    const content = await this.generateWorldContent(level);
-    level.attachAllEntities(content);
-  }
-
   public async generateWorldBounds(
     level: Level<Rect2D>,
   ): Promise<Array<Entity<Rect2D>>> {
     const mapSizeX = level.dimensions.sizeX;
     const mapSizeY = level.dimensions.sizeY;
 
-    const wallModel = await this.modelLoader.load("black");
-    const groundModel = await this.modelLoader.load("#b9bd1c");
+    const wallModel = await this.modelLoader.load("white");
 
     const top = this.entityFactory.buildEntity(
       "map_bounds_wall",
@@ -136,11 +135,77 @@ export class EggWorldActivity extends GameWorldActivity<
       null,
     );
 
-    const ground = this.entityFactory.buildEntity(
-      "map_ground",
+    return [top, bottom, left, right];
+  }
+
+  public async generateWorldContent(
+    level: Level<Rect2D>,
+  ): Promise<Array<Entity<Rect2D>>> {
+    const mapSizeX = level.dimensions.sizeX;
+    const mapSizeY = level.dimensions.sizeY;
+
+    const water = await this.createWater(mapSizeX, mapSizeY);
+    const ground = await this.createMapGround(mapSizeX, mapSizeY);
+    const waterWalls = await this.createInvisibleWalls(mapSizeX, mapSizeY);
+
+    return [water, ground, ...waterWalls];
+  }
+
+  private async createMapGround(
+    mapSizeX: number,
+    mapSizeY: number,
+  ): Promise<Entity<Rect2D>> {
+    const tileSize = 64;
+    const groundSizeX = mapSizeX - this.paddingX * 2;
+    const groundSizeY = mapSizeY - this.paddingY * 2;
+
+    const groundModelTiles = this.createGroundTiles(
+      tileSize,
+      groundSizeX,
+      groundSizeY,
+    );
+
+    const groundModel = await this.modelLoader.loadTileset(
+      "tilesets/grass.png",
+      groundModelTiles,
+    );
+
+    return this.entityFactory.buildEntity(
+      "map_foreground",
       groundModel,
       false,
       10000,
+      new Rect2D(
+        mapSizeX - this.paddingX * 2,
+        mapSizeY - this.paddingY * 2,
+        this.paddingX,
+        this.paddingY,
+      ),
+      null,
+      null,
+    );
+  }
+
+  private async createWater(
+    mapSizeX: number,
+    mapSizeY: number,
+  ): Promise<Entity<Rect2D>> {
+    const waterTiles = this.createWaterWallsTiles(
+      64,
+      mapSizeX - this.wallWeight * 2,
+      mapSizeY - this.wallWeight * 2,
+    );
+
+    const waterModel = await this.modelLoader.loadTileset(
+      "tilesets/water.png",
+      waterTiles,
+    );
+
+    return this.entityFactory.buildEntity(
+      "map_background",
+      waterModel,
+      true,
+      20000,
       new Rect2D(
         mapSizeX - this.wallWeight * 2,
         mapSizeY - this.wallWeight * 2,
@@ -150,67 +215,157 @@ export class EggWorldActivity extends GameWorldActivity<
       null,
       null,
     );
-
-    return [top, bottom, left, right, ground];
   }
 
-  public async generateWorldContent(
-    level: Level<Rect2D>,
+  private async createInvisibleWalls(
+    mapSizeX: number,
+    mapSizeY: number,
   ): Promise<Array<Entity<Rect2D>>> {
-    const result = new Array<Entity<Rect2D>>();
+    const invisibleWallModel = await this.modelLoader.load("transparent");
 
-    /*const eggModel = await this.modelLoader.load("egg.png");
-    const houseModel = await this.modelLoader.load("chicken_house.png");
+    const topWall = this.entityFactory.buildEntity(
+      "map_wall",
+      invisibleWallModel,
+      true,
+      1,
+      new Rect2D(
+        mapSizeX - this.paddingX * 2 - this.wallInset * 2,
+        this.paddingY - this.wallWeight,
+        this.paddingX + this.wallInset,
+        this.wallWeight,
+      ),
+      null,
+      null,
+    );
 
-    const defaultEggRect = new Rect2D(0.5, 0.5);
-    const defaultHouseRect = new Rect2D(2.3, 3);
+    const leftWall = this.entityFactory.buildEntity(
+      "map_wall",
+      invisibleWallModel,
+      true,
+      1,
+      new Rect2D(
+        this.paddingX - this.wallWeight + this.wallInset,
+        mapSizeY - this.wallWeight * 2,
+        this.wallWeight,
+        this.wallWeight,
+      ),
+      null,
+      null,
+    );
 
-    const housesCount = randomInteger(2, 5);
-    for (let i = 0; i < 1; i++) {
-      const startPosition = new Rect2D(
-        0,
-        0,
-        randomInteger(
-          this.wallWeight,
-          level.dimensions.sizeX - 10 - this.wallWeight,
-        ),
-        randomInteger(
-          this.wallWeight,
-          level.dimensions.sizeY - 10 - this.wallWeight,
-        ),
-      );
+    const rightWall = this.entityFactory.buildEntity(
+      "map_wall",
+      invisibleWallModel,
+      true,
+      1,
+      new Rect2D(
+        this.paddingX - this.wallWeight + this.wallInset,
+        mapSizeY - this.wallWeight * 2,
+        mapSizeX - this.paddingX - this.wallInset,
+        this.wallWeight,
+      ),
+      null,
+      null,
+    );
 
-      const house = this.entityFactory.buildEntity(
-        "chicken_house",
-        houseModel,
-        true,
-        600,
-        defaultHouseRect.plusRectCoordinates(startPosition),
-        null,
-      );
+    const bottomWall = this.entityFactory.buildEntity(
+      "map_wall",
+      invisibleWallModel,
+      true,
+      1,
+      new Rect2D(
+        mapSizeX - this.paddingX * 2 - this.wallInset * 2,
+        this.paddingY - this.wallWeight + this.wallInset,
+        this.paddingX + this.wallInset,
+        mapSizeY - this.paddingY - this.wallInset,
+      ),
+      null,
+      null,
+    );
 
-      result.push(house);
+    return [topWall, leftWall, rightWall, bottomWall];
+  }
 
-      const eggsCount = randomInteger(1, 3);
+  private createGroundTiles(
+    tileSize: number,
+    groundSizeX: number,
+    groundSizeY: number,
+  ): Array<TilesetItem> {
+    const modelTiles = new Array<TilesetItem>();
 
-      for (let j = 0; j < eggsCount; j++) {
-        const eggPosition = startPosition.copy();
-        eggPosition.posX += randomInteger(5, 8);
-        eggPosition.posY += randomInteger(5, 8);
+    for (let i = 0; i < groundSizeY; i++) {
+      for (let j = 0; j < groundSizeX; j++) {
+        let tileX: number;
+        let tileY: number;
 
-        const egg = this.entityFactory.buildEntity(
-          "egg",
-          eggModel,
-          true,
-          600,
-          defaultEggRect.plusRectCoordinates(eggPosition),
-          null,
-        );
+        if (i == 0 && j == 0) {
+          tileX = 1;
+          tileY = 3;
+        } else if (i == groundSizeY - 1 && j == groundSizeX - 1) {
+          tileX = 3;
+          tileY = 5;
+        } else if (i == 0 && j == groundSizeX - 1) {
+          tileX = 3;
+          tileY = 3;
+        } else if (i == groundSizeY - 1 && j == 0) {
+          tileX = 1;
+          tileY = 5;
+        } else if (i == 0) {
+          tileX = 2;
+          tileY = 3;
+        } else if (j == 0) {
+          tileX = 1;
+          tileY = 4;
+        } else if (i == groundSizeY - 1) {
+          tileX = 2;
+          tileY = 5;
+        } else if (j == groundSizeX - 1) {
+          tileX = 3;
+          tileY = 4;
+        } else {
+          const a = Math.floor(i + j / (i / j));
 
-        result.push(egg);
+          tileX = a % 2;
+          tileY = 0;
+        }
+
+        const tile = {
+          sourceRect: new Rect2D(
+            tileSize,
+            tileSize,
+            tileX * tileSize,
+            tileY * tileSize,
+          ),
+          destinationRect: new Rect2D(1, 1, j, i),
+        };
+
+        modelTiles.push(tile);
       }
-    }*/
+    }
 
-    return result;
+    return modelTiles;
+  }
+
+  private createWaterWallsTiles(
+    tileSize: number,
+    containerSizeX: number,
+    containerSizeY: number,
+  ): Array<TilesetItem> {
+    const modelTiles = new Array<TilesetItem>();
+
+    for (let i = 0; i < containerSizeY; i++) {
+      for (let j = 0; j < containerSizeX; j++) {
+        const tileX = j % 4;
+
+        const tile = {
+          sourceRect: new Rect2D(tileSize, tileSize, tileX * tileSize, 0),
+          destinationRect: new Rect2D(1, 1, j, i),
+        };
+
+        modelTiles.push(tile);
+      }
+    }
+
+    return modelTiles;
   }
 }

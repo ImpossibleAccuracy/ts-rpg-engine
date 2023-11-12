@@ -1,12 +1,12 @@
-import type { Rect } from "@/library/api/model/rect";
-import type { Nullable } from "@/library/api/model/common";
+import type { Rect } from "@/library/api/data/rect";
+import type { Nullable } from "@/library/api/data/common";
 import type {
   Entity,
   EntityController,
   EntityFactory,
-} from "@/library/api/model/entity";
-import { DynamicEntity, StaticEntity } from "@/library/api/model/entity";
-import { Model } from "@/library/api/visualizer/model";
+} from "@/library/api/data/entity";
+import { DynamicEntity, StaticEntity } from "@/library/api/data/entity";
+import { Model } from "@/library/api/models";
 
 export class DefaultEntityFactory<R extends Rect> implements EntityFactory<R> {
   buildEntity(

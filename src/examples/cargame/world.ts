@@ -1,16 +1,17 @@
 import { GameWorldActivity } from "@/library/impl/activity/world";
 import { CanvasRenderer } from "@/library/impl/visualizer/renderer";
-import { Rect2D } from "@/library/api/model/rect";
+import { Rect2D } from "@/library/api/data/rect";
 import { DefaultEntityFactory } from "@/library/impl/entity/factory";
-import { ImageModelLoader } from "@/library/impl/models/imageModel";
 import { CarLevel } from "@/examples/cargame/level";
 import { SuperPuperMegaTripleXXXVisualizer } from "@/examples/cargame/visualizer";
-import type { Entity } from "@/library/api/model/entity";
+import type { Entity } from "@/library/api/data/entity";
 import { randomInteger } from "@/library/api/utils/random";
 import { ObstacleController } from "@/examples/cargame/entity/obstacle";
 import { DialogActivity } from "@/library/impl/activity/dialog";
 
-import { ColorModelLoader } from "@/library/impl/models/colorModel";
+
+import { ColorModelLoader } from "@/library/impl/models/loaders/colorModelLoader";
+import { AssetModelLoader } from "@/library/impl/models/loaders/assetModelLoader";
 
 export class CarWorldActivity extends GameWorldActivity<
   CanvasRenderer,
@@ -29,7 +30,7 @@ export class CarWorldActivity extends GameWorldActivity<
     const levelBuilder = new CarLevel();
 
     const fallbackModelLoader = new ColorModelLoader();
-    const modelLoader = new ImageModelLoader(
+    const modelLoader = new AssetModelLoader(
       assetsUrl + "image/",
       fallbackModelLoader,
     );

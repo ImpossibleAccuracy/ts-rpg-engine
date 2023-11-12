@@ -1,4 +1,4 @@
-import type { Model } from "@/library/api/visualizer/model";
+import type { Model } from "@/library/api/models";
 import { SpriteImageModel } from "@/library/impl/models/spriteImageModel";
 
 export abstract class AbstractEntityAnimator {
@@ -35,7 +35,7 @@ export class StateEntityAnimator extends AbstractEntityAnimator {
 
   public animate(model: Model, animationSpeed?: number): void {
     if (!(model instanceof SpriteImageModel)) {
-      console.error("Invalid model type");
+      console.error("Invalid data type");
       return;
     }
 

@@ -1,6 +1,5 @@
-import type { SpriteMetaData } from "@/library/api/visualizer/model";
-
 import type { SpriteImageMetaData } from "@/library/impl/models/spriteImageModel";
+import type { SpriteMetaData } from "@/library/api/models/spriteModel";
 
 export interface CoordinatesJson {
   x: number;
@@ -20,22 +19,26 @@ interface BaseModelJson {
   type: string;
 }
 
-interface BaseSingleModelJson extends BaseModelJson {
-  metadata?: unknown;
-}
-
-export interface ModelJson extends BaseSingleModelJson {
+export interface ModelJson extends BaseModelJson {
   type: "model";
   name: string;
 }
 
-export interface SpriteModelJson extends BaseSingleModelJson {
+export interface SpriteModelJson extends BaseModelJson {
   type: "sprite";
   name: string;
   props?: SpriteImageMetaData;
 }
 
-export interface ArraySpriteModelJson extends BaseSingleModelJson {
+export interface TilesetModelJson extends BaseModelJson {
+  type: "tileset";
+  name: string;
+  start_position?: CoordinatesJson;
+  chunk_size: DimensionsJson;
+  items: number[][][];
+}
+
+export interface ArraySpriteModelJson extends BaseModelJson {
   type: "sprite_array";
   items: Array<string>;
   props?: SpriteMetaData;
@@ -43,6 +46,7 @@ export interface ArraySpriteModelJson extends BaseSingleModelJson {
 
 export type SingleModelType =
   | ModelJson
+  | TilesetModelJson
   | SpriteModelJson
   | ArraySpriteModelJson;
 
@@ -93,6 +97,17 @@ export function instanceOfSpriteModel(
   object: object,
 ): object is SpriteModelJson {
   return "type" in object && object.type == "sprite" && "name" in object;
+}
+
+export function instanceOfTilesetModel(
+  object: object,
+): object is TilesetModelJson {
+  return (
+    "type" in object &&
+    object.type == "tileset" &&
+    "chunk_size" in object &&
+    "items" in object
+  );
 }
 
 export function instanceOfArraySpriteModel(

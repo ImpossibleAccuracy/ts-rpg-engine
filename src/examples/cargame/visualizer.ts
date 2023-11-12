@@ -1,6 +1,6 @@
 import { LevelVisualizer } from "@/library/api/visualizer";
 import { CanvasRenderer } from "@/library/impl/visualizer/renderer";
-import { Rect2D } from "@/library/api/model/rect";
+import { Rect2D } from "@/library/api/data/rect";
 import type { Level } from "@/library/api/level";
 
 export class SuperPuperMegaTripleXXXVisualizer extends LevelVisualizer<

@@ -1,8 +1,9 @@
 import { type EntityFactory, Level, LevelBuilder } from "@/library/api/level";
-import { Rect2D } from "@/library/api/model/rect";
-import type { ModelLoader } from "@/library/api/visualizer/model";
+import { Rect2D } from "@/library/api/data/rect";
 import { CarController } from "@/examples/cargame/entity/player";
 import { WallController } from "@/examples/cargame/entity/wall";
+
+import { ModelLoader } from "@/library/impl/models/loaders";
 
 export class CarLevel extends LevelBuilder<Rect2D> {
   public static readonly roadSize: number = 12;

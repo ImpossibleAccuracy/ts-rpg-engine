@@ -1,12 +1,17 @@
 import { CanvasRenderer } from "@/library/impl/visualizer/renderer";
-import { Rect } from "@/library/api/model/rect";
-import { ModelLoader } from "@/library/api/visualizer/model";
+import { Rect } from "@/library/api/data/rect";
 import { LevelVisualizer } from "@/library/api/visualizer";
 import { AbstractActivity } from "@/library/api/activity";
-import type { EntityFactory, Level, LevelBuilder } from "@/library/api/level";
-import { DynamicEntity, Entity } from "@/library/api/model/entity";
-import type { Nullable } from "@/library/api/model/common";
+import type { Level, LevelBuilder } from "@/library/api/level";
+import {
+  DynamicEntity,
+  Entity,
+  type EntityFactory,
+} from "@/library/api/data/entity";
+import type { Nullable } from "@/library/api/data/common";
 import type { GameEngine } from "@/library/api/engine";
+
+import { ModelLoader } from "@/library/impl/models/loaders";
 
 export abstract class GameWorldActivity<
   D extends CanvasRenderer,
@@ -47,9 +52,9 @@ export abstract class GameWorldActivity<
 
   public async onLevelLoaded(level: Level<R>) {
     const bounds = await this.generateWorldBounds(level);
-    const payload = await this.generateWorldContent(level);
+    const content = await this.generateWorldContent(level);
     level.attachAllEntities(bounds);
-    level.attachAllEntities(payload);
+    level.attachAllEntities(content);
 
     console.info("World info:");
     console.info(this._level);

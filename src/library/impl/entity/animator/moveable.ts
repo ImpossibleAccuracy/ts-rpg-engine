@@ -2,9 +2,9 @@ import {
   type AnimationStateItem,
   StateEntityAnimator,
 } from "@/library/impl/entity/animator/index";
-import type { Nullable } from "@/library/api/model/common";
-import { Rect2D } from "@/library/api/model/rect";
-import type { Model } from "@/library/api/visualizer/model";
+import type { Nullable } from "@/library/api/data/common";
+import { Rect2D } from "@/library/api/data/rect";
+import type { Model } from "@/library/api/models";
 import { SpriteImageModel } from "@/library/impl/models/spriteImageModel";
 
 export interface MovableAnimationStates {
@@ -19,7 +19,7 @@ export interface MovableAnimationStates {
   bottomHold?: AnimationStateItem;
 }
 
-const animationKeys = ["left", "right", "top", "down"];
+const moveAnimationStatesNames = ["left", "right", "top", "bottom"];
 
 export class MovableEntityAnimator<
   D extends MovableAnimationStates = MovableAnimationStates,
@@ -77,7 +77,7 @@ export class MovableEntityAnimator<
     } else if (this.hasDirectedHoldState) {
       const state = this.getPrevDirection();
 
-      if (state in animationKeys) {
+      if (moveAnimationStatesNames.includes(state)) {
         return state + MovableEntityAnimator.HoldStatePostfix;
       }
 

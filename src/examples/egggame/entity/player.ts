@@ -1,8 +1,8 @@
-import { DynamicEntity, Entity } from "@/library/api/model/entity";
-import { Rect2D } from "@/library/api/model/rect";
+import { DynamicEntity, Entity } from "@/library/api/data/entity";
+import { Rect2D } from "@/library/api/data/rect";
 import { Level } from "@/library/api/level";
 import { AbstractController } from "@/library/api/controller";
-import type { Nullable } from "@/library/api/model/common";
+import type { Nullable } from "@/library/api/data/common";
 import { MouseKeyboardController } from "@/library/impl/controller";
 import { DialogActivity } from "@/library/impl/activity/dialog";
 import { MovableEntityAnimator } from "@/library/impl/entity/animator/moveable";
@@ -12,7 +12,7 @@ import { EnemyController } from "@/examples/egggame/entity/enemy";
 
 class PlayerAnimatorImpl extends MovableEntityAnimator {
   constructor(holdAnimationSpeed: number) {
-    super(false, {
+    super(true, {
       top: {
         animatorRow: 1,
         maxItemIndex: 4,
@@ -21,12 +21,12 @@ class PlayerAnimatorImpl extends MovableEntityAnimator {
         animatorRow: 2,
         maxItemIndex: 4,
       },
-      bottom: {
-        animatorRow: 0,
-        maxItemIndex: 4,
-      },
       right: {
         animatorRow: 3,
+        maxItemIndex: 4,
+      },
+      bottom: {
+        animatorRow: 0,
         maxItemIndex: 4,
       },
       hold: {
@@ -44,13 +44,13 @@ class PlayerAnimatorImpl extends MovableEntityAnimator {
         maxItemIndex: 2,
         animationSpeedMultiplier: holdAnimationSpeed,
       },
-      bottomHold: {
-        animatorRow: 0,
+      rightHold: {
+        animatorRow: 3,
         maxItemIndex: 2,
         animationSpeedMultiplier: holdAnimationSpeed,
       },
-      rightHold: {
-        animatorRow: 3,
+      bottomHold: {
+        animatorRow: 0,
         maxItemIndex: 2,
         animationSpeedMultiplier: holdAnimationSpeed,
       },

@@ -1,13 +1,13 @@
-import type { Rect } from "@/library/api/model/rect";
-import { Rect2D, Rect3D } from "@/library/api/model/rect";
+import type { Rect } from "@/library/api/data/rect";
+import { Rect2D, Rect3D } from "@/library/api/data/rect";
 import {
   DynamicEntity,
   Entity,
   EntityController,
-} from "@/library/api/model/entity";
+} from "@/library/api/data/entity";
 import type { Level } from "@/library/api/level";
 import type { AbstractController } from "@/library/api/controller";
-import type { Nullable } from "@/library/api/model/common";
+import type { Nullable } from "@/library/api/data/common";
 import { roundNumber } from "@/library/api/utils/number";
 
 export abstract class MovableEntityController<

@@ -1,47 +1,11 @@
 import { Level } from "@/library/api/level";
-import { Rect, Rect2D } from "@/library/api/model/rect";
+import { Rect2D } from "@/library/api/data/rect";
 import { AbstractVisualizer, LevelVisualizer } from "@/library/api/visualizer";
 import type { CanvasRenderer } from "@/library/impl/visualizer/renderer";
 
 export abstract class CanvasVisualizer extends AbstractVisualizer<CanvasRenderer> {
   protected constructor(renderer: CanvasRenderer) {
     super(renderer);
-  }
-}
-
-export class FullMapCanvasVisualizer extends LevelVisualizer<
-  CanvasRenderer,
-  Rect
-> {
-  constructor(renderer: CanvasRenderer) {
-    super(renderer);
-  }
-
-  display(level: Level<Rect2D>): void {
-    const canvas = this.renderer.canvas;
-
-    this.renderer.clear();
-
-    const mapDimensions = level.dimensions;
-
-    const wMultiplier = mapDimensions.sizeX / canvas.width;
-    const hMultiplier = mapDimensions.sizeY / canvas.height;
-
-    const objects = level.entities;
-
-    for (const entity of objects) {
-      const modelRect = entity.rect;
-
-      for (const model of entity.models) {
-        this.renderer.drawModel(
-          model,
-          modelRect.posX / wMultiplier,
-          modelRect.posY / hMultiplier,
-          modelRect.sizeX / wMultiplier,
-          modelRect.sizeY / hMultiplier,
-        );
-      }
-    }
   }
 }
 
@@ -57,7 +21,7 @@ export class RPGCanvasVisualizer extends LevelVisualizer<
     this.isDebugMode = isDebugMode;
   }
 
-  display(level: Level<Rect2D>) {
+  public display(level: Level<Rect2D>) {
     this.renderer.clear();
 
     const cameraRect: Rect2D = this.calculateCameraRect(level);
@@ -67,15 +31,13 @@ export class RPGCanvasVisualizer extends LevelVisualizer<
       .sort((el1, el2) => el2.order - el1.order);
 
     for (const entity of objects) {
-      const modelRect = entity.rect;
-
       for (const model of entity.models) {
         this.renderer.drawModel(
           model,
-          (modelRect.posX - cameraRect.posX) * this.blockSizePx,
-          (modelRect.posY - cameraRect.posY) * this.blockSizePx,
-          modelRect.sizeX * this.blockSizePx,
-          modelRect.sizeY * this.blockSizePx,
+          entity.rect,
+          cameraRect,
+          this.blockSizePx,
+          this.blockSizePx,
         );
       }
 

@@ -1,5 +1,5 @@
-import { CompositeRect2D, Rect2D } from "@/library/api/model/rect";
-import { Model, ModelLoader } from "@/library/api/visualizer/model";
+import { CompositeRect2D, Rect2D } from "@/library/api/data/rect";
+import { Model } from "@/library/api/models";
 import { AssetsLevelBuilder } from "@/library/api/level";
 import type {
   CollisionType,
@@ -18,15 +18,18 @@ import {
   instanceOfModel,
   instanceOfModelArray,
   instanceOfSpriteModel,
+  instanceOfTilesetModel,
 } from "@/library/impl/level/data";
 import type {
   Entity,
   EntityController,
   EntityControllerFactory,
   EntityFactory,
-} from "@/library/api/model/entity";
-import type { Nullable } from "@/library/api/model/common";
+} from "@/library/api/data/entity";
+import type { Nullable } from "@/library/api/data/common";
 import { mergeDeep } from "@/library/api/utils/object";
+
+import { ModelLoader } from "@/library/impl/models/loaders";
 
 export class AssetsLevelBuilder2D extends AssetsLevelBuilder<
   Rect2D,
@@ -59,7 +62,7 @@ export class AssetsLevelBuilder2D extends AssetsLevelBuilder<
       if (instanceOfEntity(value)) {
         // FIXME: duplicate code
         if (!value.model) {
-          throw new Error("Entity model must be specified");
+          throw new Error("Entity data must be specified");
         }
 
         if (!value.size) {
@@ -88,7 +91,7 @@ export class AssetsLevelBuilder2D extends AssetsLevelBuilder<
 
           // FIXME: duplicate code
           if (!data.model) {
-            throw new Error("Entity model must be specified");
+            throw new Error("Entity data must be specified");
           }
 
           if (!data.size) {
@@ -205,21 +208,57 @@ export class AssetsLevelBuilder2D extends AssetsLevelBuilder<
     modelLoader: ModelLoader,
   ): Promise<Model> {
     if (instanceOfModel(modelJson)) {
-      return modelLoader.load(modelJson.name, modelJson.metadata);
+      return modelLoader.load(modelJson.name);
+    } else if (instanceOfTilesetModel(modelJson)) {
+      const itemChunkSizeX = modelJson.chunk_size.w;
+      const itemChunkSizeY = modelJson.chunk_size.h;
+
+      const startX = modelJson.start_position
+        ? modelJson.start_position.x * itemChunkSizeX
+        : 0;
+      const startY = modelJson.start_position
+        ? modelJson.start_position.y * itemChunkSizeY
+        : 0;
+
+      const items = [];
+
+      for (let i = 0; i < modelJson.items.length; i++) {
+        const row = modelJson.items[i];
+
+        for (let j = 0; j < row.length; j++) {
+          const cell = row[j];
+
+          const order = cell.length >= 7 ? cell[6] : 1;
+
+          const sourceRect = new Rect2D(
+            (cell.length == 2 ? 1 : cell[2]) * itemChunkSizeX,
+            (cell.length == 2 ? 1 : cell[3]) * itemChunkSizeY,
+            startX + cell[0] * itemChunkSizeX,
+            startY + cell[1] * itemChunkSizeY,
+          );
+
+          const destinationPosX = cell.length >= 6 ? cell[4] : j;
+          const destinationPosY = cell.length >= 6 ? cell[5] : i;
+
+          const tile = {
+            order: order,
+            sourceRect: sourceRect,
+            destinationRect: new Rect2D(1, 1, destinationPosX, destinationPosY),
+          };
+
+          items.push(tile);
+        }
+      }
+
+      const sortedItems = items.sort((el, el2) => el.order - el2.order);
+
+      return modelLoader.loadTileset(modelJson.name, sortedItems);
     } else if (instanceOfSpriteModel(modelJson)) {
-      return modelLoader.loadSprite(
-        modelJson.name,
-        modelJson.props,
-        modelJson.metadata,
-      );
+      return modelLoader.loadSprite(modelJson.name, modelJson.props);
     } else if (instanceOfArraySpriteModel(modelJson)) {
-      return modelLoader.loadSpriteFromArray(
-        modelJson.items,
-        modelJson.props,
-        modelJson.metadata,
-      );
+      return modelLoader.loadSpriteFromArray(modelJson.items, modelJson.props);
     } else {
-      throw new Error("Unknown model type");
+      throw new Error("Unknown data type");
     }
   }
 

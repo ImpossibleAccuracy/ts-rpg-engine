@@ -1,8 +1,8 @@
 import { AbstractController } from "@/library/api/controller";
-import type { Nullable } from "@/library/api/model/common";
-import { Rect2D } from "@/library/api/model/rect";
+import type { Nullable } from "@/library/api/data/common";
+import { Rect2D } from "@/library/api/data/rect";
 import { MouseKeyboardController } from "@/library/impl/controller";
-import { DynamicEntity, Entity } from "@/library/api/model/entity";
+import { DynamicEntity, Entity } from "@/library/api/data/entity";
 import { Level } from "@/library/api/level";
 import type { GameWorldActivity } from "@/library/impl/activity/world";
 import type { CanvasRenderer } from "@/library/impl/visualizer/renderer";

@@ -1,4 +1,4 @@
-import { Model, ModelLoader } from "@/library/api/visualizer/model";
+import { Model } from "@/library/api/models";
 
 export class ColorModel extends Model {
   public readonly color: string;
@@ -9,22 +9,3 @@ export class ColorModel extends Model {
   }
 }
 
-export class ColorModelLoader extends ModelLoader {
-  private readonly loadedResources: Map<string, ColorModel> = new Map();
-
-  constructor(fallbackModelLoader?: ModelLoader) {
-    super(fallbackModelLoader);
-  }
-
-  async load(color: string): Promise<ColorModel> {
-    if (this.loadedResources.has(color)) {
-      return this.loadedResources.get(color)!;
-    }
-
-    const model = new ColorModel(color);
-
-    this.loadedResources.set(color, model);
-
-    return model;
-  }
-}

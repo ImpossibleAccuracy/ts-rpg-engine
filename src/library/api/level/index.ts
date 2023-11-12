@@ -2,10 +2,12 @@ import type {
   DynamicEntity,
   Entity,
   EntityControllerFactory, EntityFactory
-} from "@/library/api/model/entity";
-import { Rect } from "@/library/api/model/rect";
-import type { Nullable } from "@/library/api/model/common";
-import type { ModelLoader } from "@/library/api/visualizer/model";
+} from "@/library/api/data/entity";
+import { Rect } from "@/library/api/data/rect";
+import type { Nullable } from "@/library/api/data/common";
+
+
+import { ModelLoader } from "@/library/impl/models/loaders";
 
 export class Level<R extends Rect> {
   public readonly dimensions: R;

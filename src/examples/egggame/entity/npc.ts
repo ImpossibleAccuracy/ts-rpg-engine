@@ -1,9 +1,9 @@
 import { MovableEntityController } from "@/library/impl/entity/controller/base";
-import { Rect2D } from "@/library/api/model/rect";
-import { DynamicEntity, Entity } from "@/library/api/model/entity";
+import { Rect2D } from "@/library/api/data/rect";
+import { DynamicEntity, Entity } from "@/library/api/data/entity";
 import { Level } from "@/library/api/level";
 import { AbstractController } from "@/library/api/controller";
-import type { Nullable } from "@/library/api/model/common";
+import type { Nullable } from "@/library/api/data/common";
 import {
   AbstractEntityAnimator,
   StateEntityAnimator,

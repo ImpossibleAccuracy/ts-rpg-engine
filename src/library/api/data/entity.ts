@@ -1,10 +1,10 @@
 import { Level } from "@/library/api/level";
 import { AbstractController } from "@/library/api/controller";
-import { Rect } from "@/library/api/model/rect";
-import { Model } from "@/library/api/visualizer/model";
+import { Rect } from "@/library/api/data/rect";
+import { Model } from "@/library/api/models";
 import { AbstractActivity } from "@/library/api/activity";
 import type { CanvasRenderer } from "@/library/impl/visualizer/renderer";
-import type { Nullable } from "@/library/api/model/common";
+import type { Nullable } from "@/library/api/data/common";
 
 export abstract class EntityController<R extends Rect> {
   private owner: Nullable<AbstractActivity<CanvasRenderer>>;

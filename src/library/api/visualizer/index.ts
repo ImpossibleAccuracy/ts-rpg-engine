@@ -1,5 +1,5 @@
 import { Level } from "@/library/api/level";
-import { Rect } from "@/library/api/model/rect";
+import { Rect } from "@/library/api/data/rect";
 
 export abstract class AbstractRenderer {}
 

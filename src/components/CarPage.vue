@@ -1,5 +1,5 @@
 <template>
-  <canvas ref="canvas"></canvas>
+  <canvas ref="canvas" class="disable-anti-aliasing"></canvas>
 </template>
 
 <script lang="ts" setup>

@@ -1,5 +1,5 @@
-import { DynamicEntity, EntityController } from "@/library/api/model/entity";
-import { Rect2D } from "@/library/api/model/rect";
+import { DynamicEntity, EntityController } from "@/library/api/data/entity";
+import { Rect2D } from "@/library/api/data/rect";
 import { Level } from "@/library/api/level";
 import { AbstractController } from "@/library/api/controller";
 import { SuperPuperMegaTripleXXXVisualizer } from "@/examples/cargame/visualizer";
