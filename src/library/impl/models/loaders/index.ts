@@ -6,6 +6,7 @@ import {
   type SpriteMetaData,
 } from "@/library/api/models/spriteModel";
 import { mergeDeep } from "@/library/api/utils/object";
+import type { ImageModelMetaData } from "@/library/impl/models/imageModel";
 
 export abstract class ModelLoader {
   public readonly fallbackModelLoader?: ModelLoader;
@@ -14,9 +15,11 @@ export abstract class ModelLoader {
     this.fallbackModelLoader = fallbackModelLoader;
   }
 
-  abstract load(path: string): Promise<Model>;
+  abstract load(path: string, metadata?: ImageModelMetaData): Promise<Model>;
 
   abstract loadSprite(path: string, props?: SpriteMetaData): Promise<Model>;
+
+  abstract loadTexture(path: string): Promise<any>;
 
   abstract loadTileset(
     path: string,

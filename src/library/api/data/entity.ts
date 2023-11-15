@@ -25,7 +25,7 @@ export abstract class EntityController<R extends Rect> {
     this.owner = activity;
   }
 
-  public startActivity(activity: AbstractActivity<never>) {
+  public startActivity(activity: AbstractActivity<any>) {
     this.requireActivity().startActivity(activity);
   }
 

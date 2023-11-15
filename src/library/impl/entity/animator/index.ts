@@ -9,6 +9,7 @@ export interface AnimationStateItem {
   animatorRow?: number;
   animatorCol?: number;
   maxItemIndex?: number;
+  minItemIndex?: number;
   animationSpeedMultiplier?: number;
 }
 
@@ -35,7 +36,7 @@ export class StateEntityAnimator extends AbstractEntityAnimator {
 
   public animate(model: Model, animationSpeed?: number): void {
     if (!(model instanceof SpriteImageModel)) {
-      console.error("Invalid data type");
+      console.error("Invalid model type");
       return;
     }
 
@@ -47,11 +48,11 @@ export class StateEntityAnimator extends AbstractEntityAnimator {
     if (state.animatorRow !== undefined) {
       model.activeRow = state.animatorRow;
 
-      model.tryNextCol(state.maxItemIndex, resultAnimationSpeed);
+      model.tryNextCol(state.minItemIndex, state.maxItemIndex, resultAnimationSpeed);
     } else if (state.animatorCol !== undefined) {
       model.activeCol = state.animatorCol;
 
-      model.tryNextRow(state.maxItemIndex, resultAnimationSpeed);
+      model.tryNextRow(state.minItemIndex, state.maxItemIndex, resultAnimationSpeed);
     }
   }
 }

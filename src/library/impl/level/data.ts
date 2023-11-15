@@ -1,5 +1,6 @@
 import type { SpriteImageMetaData } from "@/library/impl/models/spriteImageModel";
 import type { SpriteMetaData } from "@/library/api/models/spriteModel";
+import type { ImageModelMetaData } from "@/library/impl/models/imageModel";
 
 export interface CoordinatesJson {
   x: number;
@@ -22,6 +23,7 @@ interface BaseModelJson {
 export interface ModelJson extends BaseModelJson {
   type: "model";
   name: string;
+  props?: ImageModelMetaData;
 }
 
 export interface SpriteModelJson extends BaseModelJson {
@@ -30,18 +32,21 @@ export interface SpriteModelJson extends BaseModelJson {
   props?: SpriteImageMetaData;
 }
 
+export interface ArraySpriteModelJson extends BaseModelJson {
+  type: "sprite_array";
+  items: Array<string>;
+  props?: SpriteMetaData;
+}
+
+export type TilesetModelRowJson = Array<TilesetModelCellJson | string>;
+export type TilesetModelCellJson = number[] | string;
+
 export interface TilesetModelJson extends BaseModelJson {
   type: "tileset";
   name: string;
   start_position?: CoordinatesJson;
   chunk_size: DimensionsJson;
-  items: number[][][];
-}
-
-export interface ArraySpriteModelJson extends BaseModelJson {
-  type: "sprite_array";
-  items: Array<string>;
-  props?: SpriteMetaData;
+  tiles: Array<TilesetModelRowJson>;
 }
 
 export type SingleModelType =
@@ -81,12 +86,14 @@ export interface EntityJson extends BaseEntityJson {
 }
 
 export interface EntityCollectionJson extends BaseEntityJson {
-  items: Array<EntityJson>;
+  items: Array<EntityType>;
 }
+
+export type EntityType = EntityJson | EntityCollectionJson;
 
 export interface LevelJson {
   size: DimensionsJson;
-  objects: Map<string, EntityJson | EntityCollectionJson>;
+  objects: Map<string, EntityType>;
 }
 
 export function instanceOfModel(object: object): object is ModelJson {
@@ -106,7 +113,7 @@ export function instanceOfTilesetModel(
     "type" in object &&
     object.type == "tileset" &&
     "chunk_size" in object &&
-    "items" in object
+    "tiles" in object
   );
 }
 

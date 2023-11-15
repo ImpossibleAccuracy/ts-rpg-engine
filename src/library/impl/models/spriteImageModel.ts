@@ -13,6 +13,10 @@ export interface SpriteImageMetaData extends SpriteMetaData {
   spriteHeight?: number;
   defaultActiveCol?: number;
   defaultActiveRow?: number;
+  maxCols?: number;
+  maxRows?: number;
+  onlyCol?: number;
+  onlyRow?: number;
 }
 
 export class DefaultSpriteImageMetaData extends DefaultSpriteMetaData {
@@ -30,6 +34,7 @@ export class DefaultSpriteImageMetaData extends DefaultSpriteMetaData {
 export class SpriteImageModel extends SpriteModel<SpriteImageMetaData> {
   public cols: number;
   public rows: number;
+  private loaded: boolean;
 
   constructor(
     public readonly image: HTMLImageElement,
@@ -37,20 +42,27 @@ export class SpriteImageModel extends SpriteModel<SpriteImageMetaData> {
   ) {
     super(spriteMetadata, 0);
     this.image = image;
+    this.loaded = false;
 
-    this.cols = 0;
-    this.rows = 0;
+    this.cols = spriteMetadata.maxCols ?? 0;
+    this.rows = spriteMetadata.maxRows ?? 0;
 
-    this._activeRow = spriteMetadata.defaultActiveRow ?? 0;
-    this._activeCol = spriteMetadata.defaultActiveCol ?? 0;
+    this._activeRow =
+      spriteMetadata.onlyRow ?? spriteMetadata.defaultActiveRow ?? 0;
+    this._activeCol =
+      spriteMetadata.onlyCol ?? spriteMetadata.defaultActiveCol ?? 0;
 
-    image.onload = () => {
-      const sizeX = this.spriteMetadata.chunkSizeX;
-      const sizeY = this.spriteMetadata.chunkSizeY;
+    if (image.complete) {
+      this.onImageLoaded();
+    } else {
+      image.addEventListener("load", () => {
+        this.onImageLoaded();
+      });
+    }
+  }
 
-      this.cols = Math.floor(this.image.width / sizeX);
-      this.rows = Math.floor(this.image.height / sizeY);
-    };
+  public get isLoaded(): boolean {
+    return this.loaded;
   }
 
   private _activeRow: number = 0;
@@ -60,8 +72,10 @@ export class SpriteImageModel extends SpriteModel<SpriteImageMetaData> {
   }
 
   set activeRow(value: number) {
-    this._activeRow = value;
-    this.activeItem = this.calculateActiveItem();
+    if (this.spriteMetadata.onlyRow == undefined) {
+      this._activeRow = value;
+      this.activeItem = this.calculateActiveItem();
+    }
   }
 
   private _activeCol: number = 0;
@@ -71,8 +85,10 @@ export class SpriteImageModel extends SpriteModel<SpriteImageMetaData> {
   }
 
   set activeCol(value: number) {
-    this._activeCol = value;
-    this.activeItem = this.calculateActiveItem();
+    if (this.spriteMetadata.onlyCol == undefined) {
+      this._activeCol = value;
+      this.activeItem = this.calculateActiveItem();
+    }
   }
 
   public tryNextSprite() {
@@ -81,15 +97,29 @@ export class SpriteImageModel extends SpriteModel<SpriteImageMetaData> {
     this.updateActiveItemCoords();
   }
 
-  public tryNextCol(maxPosition: number = this.cols, speedMultiplier?: number) {
+  public tryNextCol(
+    minPosition: number = 0,
+    maxPosition: number = this.cols,
+    speedMultiplier?: number,
+  ) {
     if (this.canDrawNextSprite(speedMultiplier)) {
-      this.activeCol = (this.activeCol + 1) % maxPosition;
+      this.activeCol = Math.max(
+        minPosition,
+        (this.activeCol + 1) % maxPosition,
+      );
     }
   }
 
-  public tryNextRow(maxPosition: number = this.rows, speedMultiplier?: number) {
+  public tryNextRow(
+    minPosition: number = 0,
+    maxPosition: number = this.rows,
+    speedMultiplier?: number,
+  ) {
     if (this.canDrawNextSprite(speedMultiplier)) {
-      this.activeRow = (this.activeRow + 1) % maxPosition;
+      this.activeRow = Math.max(
+        minPosition,
+        (this.activeRow + 1) % maxPosition,
+      );
     }
   }
 
@@ -97,9 +127,23 @@ export class SpriteImageModel extends SpriteModel<SpriteImageMetaData> {
     return this.cols * this.rows;
   }
 
+  private onImageLoaded() {
+    const sizeX = this.spriteMetadata.chunkSizeX;
+    const sizeY = this.spriteMetadata.chunkSizeY;
+
+    this.cols = this.spriteMetadata.maxCols
+      ? this.spriteMetadata.maxCols
+      : Math.floor(this.image.width / sizeX);
+    this.rows = this.spriteMetadata.maxRows
+      ? this.spriteMetadata.maxRows
+      : Math.floor(this.image.height / sizeY);
+
+    this.loaded = true;
+  }
+
   private updateActiveItemCoords() {
-    this._activeRow = Math.floor(this.activeItem / this.cols);
-    this._activeCol = this.activeItem % this.cols;
+    this.activeRow = Math.floor(this.activeItem / this.cols);
+    this.activeCol = this.activeItem % this.cols;
   }
 
   private calculateActiveItem(): number {

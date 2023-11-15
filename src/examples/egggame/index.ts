@@ -2,7 +2,7 @@ import { GameEngine, GameState } from "@/library/api/engine";
 import { MouseKeyboardController } from "@/library/impl/controller";
 import { SimpleLooper } from "@/library/impl/looper";
 import { CanvasRenderer } from "@/library/impl/visualizer/renderer";
-import { EggWorldActivity } from "@/examples/egggame/world";
+import { EggWorldActivity } from "@/examples/egggame/actiivity/world";
 
 export async function createEggWorld(
   canvas: HTMLCanvasElement,

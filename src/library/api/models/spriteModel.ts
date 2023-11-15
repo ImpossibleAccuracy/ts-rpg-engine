@@ -4,6 +4,7 @@ export interface SpriteMetaData {
   isAutomatic: boolean;
   lastDraw?: number;
   updateRate?: number;
+  repeat?: boolean;
 }
 
 export class DefaultSpriteMetaData implements SpriteMetaData {

@@ -10,6 +10,9 @@ import type {
   LevelJson,
   ModelType,
   RectJson,
+  TilesetModelCellJson,
+  TilesetModelJson,
+  TilesetModelRowJson,
 } from "@/library/impl/level/data";
 import {
   instanceOfArraySpriteModel,
@@ -30,6 +33,7 @@ import type { Nullable } from "@/library/api/data/common";
 import { mergeDeep } from "@/library/api/utils/object";
 
 import { ModelLoader } from "@/library/impl/models/loaders";
+import type { TilesetItem } from "@/library/impl/models/tilesetModel";
 
 export class AssetsLevelBuilder2D extends AssetsLevelBuilder<
   Rect2D,
@@ -51,72 +55,73 @@ export class AssetsLevelBuilder2D extends AssetsLevelBuilder<
     entityFactory: EntityFactory<Rect2D>,
     modelLoader: ModelLoader,
   ): Promise<Array<Entity<Rect2D>>> {
-    const result = new Array<Entity<Rect2D>>();
+    const promises = new Array<Promise<Array<Entity<Rect2D>>>>();
 
-    for (const obj of Object.entries(json.objects)) {
-      const key = obj[0];
-      const value = obj[1];
+    for (const el of Object.entries(json.objects)) {
+      const type = el[0];
+      const obj = el[1];
 
-      if (value.attach === false) continue;
+      const items = this.buildEntities(type, obj, entityFactory, modelLoader);
 
-      if (instanceOfEntity(value)) {
-        // FIXME: duplicate code
-        if (!value.model) {
-          throw new Error("Entity data must be specified");
-        }
+      promises.push(items);
+    }
 
-        if (!value.size) {
-          throw new Error("Entity size must be specified");
-        }
+    const items = await Promise.all(promises);
 
-        const item = await this.buildEntity(
-          key,
-          value.controller ?? null,
-          value.order,
-          value.size,
-          value.position,
-          value.model,
-          value.is_material ?? true,
-          value.collision ?? null,
+    return items.flat();
+  }
+
+  private async buildEntities(
+    type: string,
+    obj: ModelType,
+    entityFactory: EntityFactory<Rect2D>,
+    modelLoader: ModelLoader,
+  ): Promise<Array<Entity<Rect2D>>> {
+    const promises = new Array<Entity<Rect2D>>();
+
+    if (instanceOfEntity(obj)) {
+      if (obj.attach === false) return [];
+
+      if (!obj.model) {
+        throw new Error("Entity model must be specified");
+      }
+
+      if (!obj.size) {
+        throw new Error("Entity size must be specified");
+      }
+
+      const item = await this.buildEntity(
+        type,
+        obj.controller ?? null,
+        obj.order,
+        obj.size,
+        obj.position,
+        obj.model,
+        obj.is_material ?? true,
+        obj.collision ?? null,
+        entityFactory,
+        modelLoader,
+      );
+
+      promises.push(item);
+    } else if (instanceOfEntityCollection(obj)) {
+      for (const valueElement of obj.items) {
+        if (valueElement.attach === false) continue;
+
+        const data = mergeDeep({}, obj, valueElement);
+
+        const items = await this.buildEntities(
+          type,
+          data,
           entityFactory,
           modelLoader,
         );
 
-        result.push(item);
-      } else if (instanceOfEntityCollection(value)) {
-        for (const valueElement of value.items) {
-          if (valueElement.attach === false) continue;
-
-          const data = mergeDeep({}, value, valueElement);
-
-          // FIXME: duplicate code
-          if (!data.model) {
-            throw new Error("Entity data must be specified");
-          }
-
-          if (!data.size) {
-            throw new Error("Entity size must be specified");
-          }
-
-          const item = await this.buildEntity(
-            key,
-            data.controller ?? null,
-            data.order,
-            data.size,
-            data.position,
-            data.model,
-            data.is_material ?? true,
-            data.collision ?? null,
-            entityFactory,
-            modelLoader,
-          );
-
-          result.push(item);
-        }
+        promises.push(...items);
       }
     }
 
-    return result;
+    return promises;
   }
 
   private async buildEntity(
@@ -208,7 +213,7 @@ export class AssetsLevelBuilder2D extends AssetsLevelBuilder<
     modelLoader: ModelLoader,
   ): Promise<Model> {
     if (instanceOfModel(modelJson)) {
-      return modelLoader.load(modelJson.name);
+      return modelLoader.load(modelJson.name, modelJson.props);
     } else if (instanceOfTilesetModel(modelJson)) {
       const itemChunkSizeX = modelJson.chunk_size.w;
       const itemChunkSizeY = modelJson.chunk_size.h;
@@ -220,46 +225,161 @@ export class AssetsLevelBuilder2D extends AssetsLevelBuilder<
         ? modelJson.start_position.y * itemChunkSizeY
         : 0;
 
-      const items = [];
+      const tiles = this.createTilesetItems(
+        modelJson,
+        itemChunkSizeX,
+        itemChunkSizeY,
+        startX,
+        startY,
+      );
 
-      for (let i = 0; i < modelJson.items.length; i++) {
-        const row = modelJson.items[i];
-
-        for (let j = 0; j < row.length; j++) {
-          const cell = row[j];
-
-          const order = cell.length >= 7 ? cell[6] : 1;
-
-          const sourceRect = new Rect2D(
-            (cell.length == 2 ? 1 : cell[2]) * itemChunkSizeX,
-            (cell.length == 2 ? 1 : cell[3]) * itemChunkSizeY,
-            startX + cell[0] * itemChunkSizeX,
-            startY + cell[1] * itemChunkSizeY,
-          );
-
-          const destinationPosX = cell.length >= 6 ? cell[4] : j;
-          const destinationPosY = cell.length >= 6 ? cell[5] : i;
-
-          const tile = {
-            order: order,
-            sourceRect: sourceRect,
-            destinationRect: new Rect2D(1, 1, destinationPosX, destinationPosY),
-          };
-
-          items.push(tile);
-        }
-      }
-
-      const sortedItems = items.sort((el, el2) => el.order - el2.order);
-
-      return modelLoader.loadTileset(modelJson.name, sortedItems);
+      return modelLoader.loadTileset(modelJson.name, tiles);
     } else if (instanceOfSpriteModel(modelJson)) {
       return modelLoader.loadSprite(modelJson.name, modelJson.props);
     } else if (instanceOfArraySpriteModel(modelJson)) {
       return modelLoader.loadSpriteFromArray(modelJson.items, modelJson.props);
     } else {
-      throw new Error("Unknown data type");
+      throw new Error("Unknown model type");
     }
+  }
+
+  private createTilesetItems(
+    modelJson: TilesetModelJson,
+    itemChunkSizeX: number,
+    itemChunkSizeY: number,
+    startX: number,
+    startY: number,
+  ): Array<TilesetItem> {
+    const items = new Array<TilesetItem & { order: number }>();
+
+    let activeRow = 0;
+    for (let i = 0; i < modelJson.tiles.length; i++) {
+      const row = modelJson.tiles[i];
+
+      if (typeof row === "string") {
+        const command = row as string;
+        const activeTile = modelJson.tiles[i - 1];
+
+        if (command.startsWith("repeat ")) {
+          const number = parseInt(command.substring(7));
+
+          for (let j = 0; j < number; j++) {
+            const buildTileRow = this.buildTileRow(
+              activeTile,
+              activeRow++,
+              itemChunkSizeX,
+              itemChunkSizeY,
+              startX,
+              startY,
+            );
+
+            items.push(...buildTileRow);
+          }
+        }
+      } else if (row instanceof Array) {
+        const tiles = this.buildTileRow(
+          row,
+          activeRow++,
+          itemChunkSizeX,
+          itemChunkSizeY,
+          startX,
+          startY,
+        );
+
+        items.push(...tiles);
+      }
+    }
+
+    return items.sort((el, el2) => el.order - el2.order);
+  }
+
+  private buildTileRow(
+    row: TilesetModelRowJson,
+    rowIndex: number,
+    itemChunkSizeX: number,
+    itemChunkSizeY: number,
+    startX: number,
+    startY: number,
+  ): Array<TilesetItem & { order: number }> {
+    const result = new Array<TilesetItem & { order: number }>();
+
+    let columnIndex = 0;
+    for (let j = 0; j < row.length; j++) {
+      const cell = row[j] as TilesetModelCellJson;
+
+      if (typeof cell === "string") {
+        const command = cell as string;
+        const activeTile = row[j - 1];
+
+        if (command.startsWith("repeat ")) {
+          const number = parseInt(command.substring(7));
+
+          for (let j = 0; j < number; j++) {
+            const tileItem = this.buildTile(
+              activeTile as number[],
+              rowIndex,
+              columnIndex++,
+              itemChunkSizeX,
+              itemChunkSizeY,
+              startX,
+              startY,
+            );
+
+            if (!tileItem) continue;
+
+            result.push(tileItem);
+          }
+        }
+      } else {
+        const tileItem = this.buildTile(
+          cell as number[],
+          rowIndex,
+          columnIndex++,
+          itemChunkSizeX,
+          itemChunkSizeY,
+          startX,
+          startY,
+        );
+
+        if (!tileItem) continue;
+
+        result.push(tileItem);
+      }
+    }
+
+    return result;
+  }
+
+  private buildTile(
+    cell: number[],
+    rowIndex: number,
+    celIndex: number,
+    itemChunkSizeX: number,
+    itemChunkSizeY: number,
+    startX: number,
+    startY: number,
+  ): Nullable<TilesetItem & { order: number }> {
+    if (cell.length == 0) return null;
+
+    const order = cell.length >= 7 ? cell[6] : 1;
+
+    const sourceRect = new Rect2D(
+      (cell.length == 2 ? 1 : cell[2]) * itemChunkSizeX,
+      (cell.length == 2 ? 1 : cell[3]) * itemChunkSizeY,
+      startX + cell[0] * itemChunkSizeX,
+      startY + cell[1] * itemChunkSizeY,
+    );
+
+    const destinationPosX = cell.length >= 6 ? cell[4] : celIndex;
+    const destinationPosY = cell.length >= 6 ? cell[5] : rowIndex;
+
+    if (sourceRect.posX < 0 && sourceRect.posY < 0) return null;
+
+    return {
+      order: order,
+      sourceRect: sourceRect,
+      destinationRect: new Rect2D(1, 1, destinationPosX, destinationPosY),
+    };
   }
 
   private createController(

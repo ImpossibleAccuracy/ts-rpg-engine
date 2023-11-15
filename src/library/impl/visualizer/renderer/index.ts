@@ -76,7 +76,35 @@ export class CanvasRenderer extends AbstractRenderer {
     } else if (model instanceof ColorModel) {
       this.drawColoModel(model, startX, startY, modelSizeX, modelSizeY);
     } else {
-      throw new Error("Invalid data type: " + model);
+      throw new Error("Invalid model type: " + model);
+    }
+  }
+
+  public drawModelManually(
+    model: Model,
+    x: number,
+    y: number,
+    h: number,
+    w: number,
+  ) {
+    if (model instanceof SpriteModel) {
+      if (model.spriteMetadata.isAutomatic) {
+        model.tryNextSprite();
+      }
+
+      if (model instanceof SpriteImageModel) {
+        this.drawSpriteImageModel(model, x, y, w, h);
+      } else if (model instanceof SpriteArrayModel) {
+        this.drawSpriteArrayModel(model, x, y, w, h);
+      }
+    } else if (model instanceof TilesetModel) {
+      throw new Error("Not supported");
+    } else if (model instanceof ImageModel) {
+      this.drawImageModel(model, x, y, w, h);
+    } else if (model instanceof ColorModel) {
+      this.drawColoModel(model, x, y, w, h);
+    } else {
+      throw new Error("Invalid model type: " + model);
     }
   }
 
@@ -88,6 +116,8 @@ export class CanvasRenderer extends AbstractRenderer {
     blockSizeX: number,
     blockSizeY: number,
   ) {
+    if (!model.isLoaded) return;
+
     const startX = blockSizeX * (x - viewport.posX);
     const startY = blockSizeY * (y - viewport.posY);
 
@@ -122,17 +152,33 @@ export class CanvasRenderer extends AbstractRenderer {
     }
   }
 
-  private drawImageModel(
+  public drawImageModel(
     model: ImageModel,
     x: number,
     y: number,
     w: number,
     h: number,
   ) {
-    this.context.drawImage(model.image, x, y, w, h);
+    if (!model.isLoaded) return;
+
+    if (model.metadata) {
+      this.context.drawImage(
+        model.image,
+        model.metadata.offsetX!,
+        model.metadata.offsetY!,
+        model.metadata.width!,
+        model.metadata.height!,
+        x,
+        y,
+        w,
+        h,
+      );
+    } else {
+      this.context.drawImage(model.image, x, y, w, h);
+    }
   }
 
-  private drawColoModel(
+  public drawColoModel(
     model: ColorModel,
     x: number,
     y: number,
@@ -144,13 +190,15 @@ export class CanvasRenderer extends AbstractRenderer {
     this.context.fillRect(x, y, w, h);
   }
 
-  private drawSpriteImageModel(
+  public drawSpriteImageModel(
     model: SpriteImageModel,
     x: number,
     y: number,
     w: number,
     h: number,
   ) {
+    if (!model.isLoaded) return;
+
     const chunkSizeX = model.spriteMetadata.chunkSizeX;
     const chunkSizeY = model.spriteMetadata.chunkSizeY;
 
@@ -165,18 +213,43 @@ export class CanvasRenderer extends AbstractRenderer {
       ? model.spriteMetadata.spriteOffsetY + chunkSizeY * activeRow
       : chunkSizeY * activeRow;
 
-    const sw = model.spriteMetadata.spriteWidth
-      ? model.spriteMetadata.spriteWidth
-      : chunkSizeX;
+    const sw = chunkSizeX;
+    const sh = chunkSizeY;
 
-    const sh = model.spriteMetadata.spriteHeight
-      ? model.spriteMetadata.spriteHeight
-      : chunkSizeY;
+    if (model.spriteMetadata.repeat) {
+      const partMaxSizeX = model.spriteMetadata.spriteWidth!;
+      const partMaxSizeY = model.spriteMetadata.spriteHeight!;
 
-    this.context.drawImage(model.image, sx, sy, sw, sh, x, y, w, h);
+      const maxCols = w / partMaxSizeX;
+      const maxRows = h / partMaxSizeY;
+
+      for (let i = 0; i < maxRows; i++) {
+        for (let j = 0; j < maxCols; j++) {
+          const partPosX = j * partMaxSizeX;
+          const partPosY = i * partMaxSizeY;
+
+          const partSizeX = Math.min(partMaxSizeX, w - partPosX);
+          const partSizeY = Math.min(partMaxSizeY, h - partPosY);
+
+          this.context.drawImage(
+            model.image,
+            Math.floor(sx),
+            Math.floor(sy),
+            Math.floor(sw),
+            Math.floor(sh),
+            Math.floor(x + partPosX),
+            Math.floor(y + partPosY),
+            Math.floor(partSizeX),
+            Math.floor(partSizeY),
+          );
+        }
+      }
+    } else {
+      this.context.drawImage(model.image, sx, sy, sw, sh, x, y, w, h);
+    }
   }
 
-  private drawSpriteArrayModel(
+  public drawSpriteArrayModel(
     model: SpriteArrayModel<ImageModel>,
     x: number,
     y: number,

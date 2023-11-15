@@ -23,6 +23,10 @@ export abstract class MovableEntityController<
     this.baseEntitySpeed = baseEntitySpeed;
   }
 
+  public canMove(): boolean {
+    return this._canMove;
+  }
+
   public abstract moveEntity(
     entity: Entity<R>,
     level: Level<R>,
@@ -56,7 +60,7 @@ export abstract class MovableEntityController<
       this._lastUpdate = Date.now();
     }
 
-    if (this._canMove) {
+    if (this.canMove()) {
       const displacement = this.moveEntity(entity, level, controller);
 
       if (displacement) {

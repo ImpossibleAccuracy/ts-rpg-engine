@@ -1,20 +1,30 @@
 import { Model } from "@/library/api/models";
 
+export interface ImageModelMetaData {
+  offsetX?: number;
+  offsetY?: number;
+  width?: number;
+  height?: number;
+}
+
 export class ImageModel extends Model {
   private loaded: boolean;
 
-  constructor(public readonly image: HTMLImageElement) {
+  constructor(
+    public readonly image: HTMLImageElement,
+    public readonly metadata?: ImageModelMetaData,
+  ) {
     super();
 
     this.loaded = false;
 
-    image.addEventListener("load", () => {
-      this.loaded = true;
-
-      if (this._onload) {
-        this._onload();
-      }
-    });
+    if (image.complete) {
+      this.onImageLoaded();
+    } else {
+      image.addEventListener("load", () => {
+        this.onImageLoaded();
+      });
+    }
   }
 
   public get width(): number {
@@ -37,5 +47,13 @@ export class ImageModel extends Model {
 
   public get isLoaded(): boolean {
     return this.loaded;
+  }
+
+  private onImageLoaded() {
+    this.loaded = true;
+
+    if (this._onload) {
+      this._onload();
+    }
   }
 }

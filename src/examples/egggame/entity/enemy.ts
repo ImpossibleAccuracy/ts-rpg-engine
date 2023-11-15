@@ -9,6 +9,7 @@ import {
   type MovableAnimationStates,
   MovableEntityAnimator,
 } from "@/library/impl/entity/animator/moveable";
+import { calculateHypotenuse } from "@/library/api/utils/math";
 
 interface EnemyAnimationDirections extends MovableAnimationStates {
   attack?: AnimationStateItem;
@@ -202,15 +203,18 @@ class WraithAnimator extends EnemyAnimator {
 export class EnemyController extends MovableEntityController<Rect2D> {
   private readonly animator: EnemyAnimator;
   private readonly attackRange: number;
+  private readonly fieldOfView: number;
 
   constructor(
     baseEntitySpeed: number,
     animator: EnemyAnimator,
     attackRang: number,
+    fieldOfView: number,
   ) {
     super(baseEntitySpeed);
     this.animator = animator;
     this.attackRange = attackRang;
+    this.fieldOfView = fieldOfView;
   }
 
   onUpdate(
@@ -241,17 +245,21 @@ export class EnemyController extends MovableEntityController<Rect2D> {
     const speed = this.getSpeed();
     const distance = this.calculateHypotenuse(distanceToPlayer);
 
-    const sinX = distance / distanceToPlayer.posX;
-    const sinY = distance / distanceToPlayer.posY;
+    if (distance < this.fieldOfView) {
+      const sinX = distance / distanceToPlayer.posX;
+      const sinY = distance / distanceToPlayer.posY;
 
-    const newDistance = distance - speed;
+      const newDistance = distance - speed;
 
-    const displacement = new Rect2D(0, 0);
+      const displacement = new Rect2D(0, 0);
 
-    displacement.posX = distanceToPlayer.posX - newDistance / sinX;
-    displacement.posY = distanceToPlayer.posY - newDistance / sinY;
+      displacement.posX = distanceToPlayer.posX - newDistance / sinX;
+      displacement.posY = distanceToPlayer.posY - newDistance / sinY;
 
-    return displacement;
+      return displacement;
+    } else {
+      return null;
+    }
   }
 
   public onEntityMove(
@@ -269,7 +277,10 @@ export class EnemyController extends MovableEntityController<Rect2D> {
       .getCollisionRect()
       .calculateDistance(player.getCollisionRect());
 
-    const distance = Math.abs(this.calculateHypotenuse(distanceToPlayer));
+    const distance = calculateHypotenuse(
+      distanceToPlayer.posX,
+      distanceToPlayer.posY,
+    );
 
     this.animator.isAttacking =
       distance <= this.attackRange && distance <= this.attackRange;
@@ -284,26 +295,37 @@ export class EnemyController extends MovableEntityController<Rect2D> {
       )
     );
   }
-
-  private calculateHypotenuse(rect: Rect2D): number {
-    return Math.sqrt(rect.posX ** 2 + rect.posY ** 2);
-  }
 }
 
 export class SlimeController extends EnemyController {
-  constructor(speed?: number, attackDistance?: number) {
-    super(speed ?? 2, new SlimeAnimator(), attackDistance ?? 1);
+  constructor(speed?: number, attackDistance?: number, fieldOfView?: number) {
+    super(
+      speed ?? 2,
+      new SlimeAnimator(),
+      attackDistance ?? 1,
+      fieldOfView ?? 10,
+    );
   }
 }
 
 export class GoblinController extends EnemyController {
-  constructor(speed?: number, attackDistance?: number) {
-    super(speed ?? 4, new GoblinAnimator(), attackDistance ?? 1.5);
+  constructor(speed?: number, attackDistance?: number, fieldOfView?: number) {
+    super(
+      speed ?? 4,
+      new GoblinAnimator(),
+      attackDistance ?? 1.5,
+      fieldOfView ?? 10,
+    );
   }
 }
 
 export class WraithController extends EnemyController {
-  constructor(speed?: number, attackDistance?: number) {
-    super(speed ?? 4, new WraithAnimator(), attackDistance ?? 0.5);
+  constructor(speed?: number, attackDistance?: number, fieldOfView?: number) {
+    super(
+      speed ?? 4,
+      new WraithAnimator(),
+      attackDistance ?? 0.5,
+      fieldOfView ?? 10,
+    );
   }
 }

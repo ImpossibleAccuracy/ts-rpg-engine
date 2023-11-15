@@ -1,14 +1,22 @@
-import { DynamicEntity, Entity } from "@/library/api/data/entity";
+import { DynamicEntity, Entity, StaticEntity } from "@/library/api/data/entity";
 import { Rect2D } from "@/library/api/data/rect";
 import { Level } from "@/library/api/level";
 import { AbstractController } from "@/library/api/controller";
 import type { Nullable } from "@/library/api/data/common";
 import { MouseKeyboardController } from "@/library/impl/controller";
-import { DialogActivity } from "@/library/impl/activity/dialog";
 import { MovableEntityAnimator } from "@/library/impl/entity/animator/moveable";
-import { EggWorldActivity } from "@/examples/egggame/world";
 import { MovableEntityController } from "@/library/impl/entity/controller/base";
 import { EnemyController } from "@/examples/egggame/entity/enemy";
+import { calculateHypotenuse } from "@/library/api/utils/math";
+import { GameWorldActivity } from "@/library/impl/activity/world";
+import { NpcDialog } from "@/examples/egggame/actiivity/dialog";
+import type {
+  Dialog,
+  DialogCallbacks,
+} from "@/examples/egggame/actiivity/dialog/model/dialog";
+import { buildDialog, QuestQiverDialogs } from "@/examples/egggame/store";
+import { Timer } from "@/library/impl/utils/timer";
+import { ColorModel } from "@/library/impl/models/colorModel";
 
 class PlayerAnimatorImpl extends MovableEntityAnimator {
   constructor(holdAnimationSpeed: number) {
@@ -61,27 +69,38 @@ class PlayerAnimatorImpl extends MovableEntityAnimator {
 export class EggPlayerController extends MovableEntityController<Rect2D> {
   private static readonly RunSpeedMultiplier = 2;
   private static readonly DefaultPlayerSpeed = 5;
+  private static readonly InteractionDistance = 0.5;
 
-  private isInDialog: boolean = false;
+  private canInteract: boolean = true;
+  private isStartDialogFinished: boolean = false;
+
+  private readonly loggerTimer = new Timer(500);
+  private readonly blockSpawnTimer = new Timer(500);
+
   private readonly animator = new PlayerAnimatorImpl(0.2);
 
   constructor(playerSpeed?: number) {
     super(playerSpeed ?? EggPlayerController.DefaultPlayerSpeed);
   }
 
-  public onUpdate(
-    entity: DynamicEntity<Rect2D>,
-    level: Level<Rect2D>,
-    controller: AbstractController,
-  ) {
-    super.onUpdate(entity, level, controller);
+  public canMove(): boolean {
+    return super.canMove() && this.canInteract;
+  }
 
-    if (!this.isInDialog) {
-      this.animator.updateState();
+  public requireKeyboardController(): MouseKeyboardController {
+    const owner = this.requireActivity();
+
+    if (!(owner instanceof GameWorldActivity)) {
+      throw new Error("Unknown activity");
     }
 
-    const speedMultiplier = this.calculateSpeedMultiplier();
-    this.animator.animate(entity.primaryModel, speedMultiplier);
+    const controller = owner.controller;
+
+    if (!(controller instanceof MouseKeyboardController)) {
+      throw new Error("Unknown controller");
+    }
+
+    return controller;
   }
 
   public moveEntity(): Nullable<Rect2D> {
@@ -124,40 +143,16 @@ export class EggPlayerController extends MovableEntityController<Rect2D> {
     return displacement;
   }
 
-  public onEntityCollisionFound(
+  public onUpdate(
+    entity: DynamicEntity<Rect2D>,
     level: Level<Rect2D>,
-    _entity: DynamicEntity<Rect2D>,
-    other: Entity<Rect2D>,
-  ): void {
-    if (other.type === "egg") {
-      this.lockPosition();
+    controller: AbstractController,
+  ) {
+    super.onUpdate(entity, level, controller);
 
-      const eggsCount = level.findAllEntitiesByType("egg").length;
+    this.findNpcInteractions(level, entity);
 
-      const activity = this.requireActivity();
-
-      let dialogData;
-      if (eggsCount > 1) {
-        dialogData = {
-          title: `Осталось яиц: ${eggsCount - 1}`,
-          closable: true,
-        };
-      } else {
-        dialogData = {
-          title: "Вы собрали все яйца",
-          closable: false,
-        };
-      }
-
-      const dialog = activity.createActivity(DialogActivity, dialogData, {
-        onClose: () => {
-          level.removeEntity(other);
-          this.unlockPosition();
-        },
-      });
-
-      activity.startActivity(dialog);
-    }
+    this.updateAnimation(entity);
   }
 
   public onEntityMove(
@@ -166,6 +161,7 @@ export class EggPlayerController extends MovableEntityController<Rect2D> {
     oldPosition: Rect2D,
     newPosition: Rect2D,
   ): void {
+    // console.log(newPosition.posX, newPosition.posY);
     this.animator.updateByOffset(oldPosition, newPosition);
   }
 
@@ -179,14 +175,85 @@ export class EggPlayerController extends MovableEntityController<Rect2D> {
     );
   }
 
+  private findNpcInteractions(level: Level<Rect2D>, entity: Entity<Rect2D>) {
+    if (!this.canInteract) return;
+
+    const playerCollision = entity.getCollisionRect();
+    const npcList = level.findAllEntitiesByType("npc");
+    for (const npc of npcList) {
+      const distanceToNpc = playerCollision.calculateDistance(
+        npc.getCollisionRect(),
+      );
+
+      const distance = calculateHypotenuse(
+        distanceToNpc.posX,
+        distanceToNpc.posY,
+      );
+
+      if (distance < EggPlayerController.InteractionDistance) {
+        this.onNpcInteraction(level, entity, npc);
+      }
+    }
+  }
+
+  private onNpcInteraction(
+    level: Level<Rect2D>,
+    entity: Entity<Rect2D>,
+    npc: Entity<Rect2D>,
+  ) {
+    const controller = this.requireKeyboardController();
+
+    if (controller.isKeyPressed("e") && this.canInteract) {
+      this.startNpcDialog(level, entity, npc);
+    }
+  }
+
+  private async startNpcDialog(
+    level: Level<Rect2D>,
+    entity: Entity<Rect2D>,
+    npc: Entity<Rect2D>,
+  ) {
+    this.canInteract = false;
+
+    const owner = this.requireActivity() as GameWorldActivity<any, any>;
+    const modelLoader = owner.modelLoader;
+
+    let dialogData: Dialog;
+    if (this.isStartDialogFinished) {
+      dialogData = await buildDialog(QuestQiverDialogs.getAway, modelLoader);
+    } else {
+      dialogData = await buildDialog(QuestQiverDialogs.giveMeEggs, modelLoader);
+    }
+
+    const dialogCallbacks: DialogCallbacks = {
+      onFinish: () => {
+        this.isStartDialogFinished = true;
+
+        setTimeout(() => {
+          this.canInteract = true;
+        }, 500);
+      },
+    };
+
+    const activity = owner.createActivity(
+      NpcDialog,
+      owner.modelLoader,
+      dialogData,
+      dialogCallbacks,
+    );
+
+    this.startActivity(activity);
+  }
+
+  private updateAnimation(entity: Entity<Rect2D>) {
+    this.animator.updateState();
+
+    const speedMultiplier = this.calculateSpeedMultiplier();
+    this.animator.animate(entity.primaryModel, speedMultiplier);
+  }
+
   private calculateSpeedMultiplier(): number {
-    const owner = this.requireActivity();
-
-    if (!(owner instanceof EggWorldActivity)) return 1;
-
-    const controller = owner.controller;
-
-    if (!(controller instanceof MouseKeyboardController)) return 1;
+    const controller = this.requireKeyboardController();
 
     return controller.isKeyPressed("shift")
       ? EggPlayerController.RunSpeedMultiplier

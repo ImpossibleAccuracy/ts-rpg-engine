@@ -1,5 +1,8 @@
 import { Model } from "@/library/api/models";
-import { ImageModel } from "@/library/impl/models/imageModel";
+import {
+  ImageModel,
+  type ImageModelMetaData,
+} from "@/library/impl/models/imageModel";
 import { ModelLoader } from "@/library/impl/models/loaders/index";
 import type { SpriteMetaData } from "@/library/api/models/spriteModel";
 import type { TilesetItem } from "@/library/impl/models/tilesetModel";
@@ -19,11 +22,14 @@ export class AssetModelLoader extends ModelLoader {
     this.baseUrl = baseUrl;
   }
 
-  public async load(path: string): Promise<Model> {
+  public async load(
+    path: string,
+    metadata: ImageModelMetaData,
+  ): Promise<Model> {
     try {
       const image = await this.loadImage(path);
 
-      return new ImageModel(image);
+      return new ImageModel(image, metadata);
     } catch (e) {
       if (this.fallbackModelLoader) {
         return await this.fallbackModelLoader.load(path);
@@ -53,18 +59,15 @@ export class AssetModelLoader extends ModelLoader {
     return new TilesetModel(image, parts);
   }
 
-  private async isImageExists(path: string): Promise<boolean> {
-    const response = await fetch(this.baseUrl + path);
-
-    const text = await response.text();
-
-    return response.ok && text.search("<!DOCTYPE ") == -1;
+  public loadTexture(path: string): Promise<any> {
+    return this.loadImage(path);
   }
 
   private async loadImage(path: string): Promise<HTMLImageElement> {
     const isImageExists = await this.isImageExists(path);
+
     if (!isImageExists) {
-      throw new Error();
+      throw new Error("Image asset not exists");
     }
 
     if (AssetModelLoader.loadedResources.has(path)) {
@@ -77,5 +80,13 @@ export class AssetModelLoader extends ModelLoader {
     AssetModelLoader.loadedResources.set(path, image);
 
     return image;
+  }
+
+  private async isImageExists(path: string): Promise<boolean> {
+    const response = await fetch(this.baseUrl + path);
+
+    const text = await response.text();
+
+    return response.ok && text.search("<!DOCTYPE ") == -1;
   }
 }

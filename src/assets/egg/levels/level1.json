@@ -1,17 +1,1395 @@
 {
   "size": {
-    "w": 100,
-    "h": 100
+    "w": 70,
+    "h": 50
   },
   "objects": {
+    "wall": {
+      "attach": true,
+      "order": 1,
+      "is_material": true,
+      "model": {
+        "type": "model",
+        "name": "transparent"
+      },
+      "items": [
+        {
+          "items": [
+            {
+              "position": {
+                "x": 0,
+                "y": 0
+              },
+              "size": {
+                "w": 3,
+                "h": 50
+              }
+            },
+            {
+              "position": {
+                "x": 67,
+                "y": 0
+              },
+              "size": {
+                "w": 3,
+                "h": 50
+              }
+            },
+            {
+              "position": {
+                "x": 3,
+                "y": 0
+              },
+              "size": {
+                "w": 64,
+                "h": 2.5
+              }
+            },
+            {
+              "position": {
+                "x": 3,
+                "y": 47
+              },
+              "size": {
+                "w": 64,
+                "h": 3
+              }
+            }
+          ]
+        },
+        {
+          "items": [
+            {
+              "position": {
+                "x": 3,
+                "y": 12
+              },
+              "size": {
+                "w": 9,
+                "h": 35
+              }
+            },
+            {
+              "position": {
+                "x": 12,
+                "y": 9.85
+              },
+              "size": {
+                "w": 7,
+                "h": 37.15
+              }
+            },
+            {
+              "position": {
+                "x": 12,
+                "y": 2.5
+              },
+              "size": {
+                "w": 7,
+                "h": 6.1
+              }
+            },
+            {
+              "position": {
+                "x": 58,
+                "y": 2.5
+              },
+              "size": {
+                "w": 9,
+                "h": 44.5
+              }
+            },
+            {
+              "position": {
+                "x": 19,
+                "y": 37
+              },
+              "size": {
+                "w": 39,
+                "h": 10
+              }
+            }
+          ]
+        },
+        {
+          "items": [
+            {
+              "position": {
+                "x": 19,
+                "y": 8
+              },
+              "size": {
+                "w": 1,
+                "h": 0.5
+              }
+            },
+            {
+              "position": {
+                "x": 19,
+                "y": 10
+              },
+              "size": {
+                "w": 1,
+                "h": 0.5
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "water": {
+      "attach": true,
+      "order": 10000,
+      "is_material": false,
+      "model": {
+        "type": "sprite",
+        "name": "tilesets/water.png",
+        "props": {
+          "isAutomatic": true,
+          "updateRate": 250,
+          "spriteWidth": 40,
+          "spriteHeight": 40,
+          "chunkSizeX": 128,
+          "chunkSizeY": 128,
+          "repeat": true
+        }
+      },
+      "size": {
+        "w": 70,
+        "h": 50
+      },
+      "position": {
+        "x": 0,
+        "y": 0
+      }
+    },
+    "ground": {
+      "order": 9999,
+      "is_material": false,
+      "model": {
+        "type": "tileset",
+        "name": "tilesets/grass.png",
+        "chunk_size": {
+          "w": 64,
+          "h": 64
+        }
+      },
+      "items": [
+        {
+          "model": {
+            "tiles": [
+              [[1, 3], [2, 3], "repeat 7", [3, 3]],
+              [[1, 4], [2, 4], "repeat 7", [3, 4]],
+              "repeat 7",
+              [[1, 5], [2, 5], "repeat 7", [3, 5]]
+            ]
+          },
+          "size": {
+            "w": 10,
+            "h": 10
+          },
+          "position": {
+            "x": 2.5,
+            "y": 2.5
+          }
+        },
+        {
+          "model": {
+            "tiles": [
+              [[1, 3], [2, 3], "repeat 36", [3, 3], []],
+              [[1, 4], [2, 0], "repeat 36", [4, 5], [3, 3]],
+              [[1, 4], [2, 0], "repeat 37", [3, 4]],
+              "repeat 2",
+              [[1, 5], [5, 4], [2, 0], "repeat 36", [3, 4]],
+              [[], [1, 4], [2, 0], "repeat 36", [3, 4]],
+              [[], [1, 4], [2, 0], "repeat 36", [3, 4]],
+              [[1, 3], [5, 5], [2, 0], "repeat 36", [3, 4]],
+              [[1, 4], [2, 0], "repeat 37", [3, 4]],
+              "repeat 23",
+              [[1, 5], [5, 4], [2, 0], "repeat 36", [3, 4]],
+              [[], [1, 5], [2, 5], "repeat 36", [3, 5]]
+            ]
+          },
+          "size": {
+            "w": 40,
+            "h": 35
+          },
+          "position": {
+            "x": 18.5,
+            "y": 2.5
+          }
+        }
+      ]
+    },
+    "stone": {
+      "attach": true,
+      "order": 1000,
+      "is_material": true,
+      "items": [
+        {
+          "model": {
+            "type": "model",
+            "name": "objects/decor/natural_objects_01.png",
+            "props": {
+              "offsetX": 320,
+              "offsetY": 268,
+              "width": 64,
+              "height": 48
+            }
+          },
+          "size": {
+            "w": 1,
+            "h": 0.75
+          },
+          "items": [
+            {
+              "position": {
+                "x": 6,
+                "y": 11
+              }
+            },
+            {
+              "position": {
+                "x": 10,
+                "y": 4
+              }
+            },
+            {
+              "position": {
+                "x": 3.5,
+                "y": 5.3
+              }
+            }
+          ]
+        },
+        {
+          "attach": false,
+          "model": {
+            "type": "model",
+            "name": "objects/decor/natural_objects_02.png"
+          },
+          "size": {
+            "w": 1,
+            "h": 1
+          },
+          "items": [
+            {
+              "model": {
+                "props": {
+                  "offsetX": 0,
+                  "offsetY": 0,
+                  "width": 64,
+                  "height": 64
+                }
+              },
+              "items": [
+                {
+                  "position": {
+                    "y": 7,
+                    "x": 7
+                  }
+                }
+              ]
+            },
+            {
+              "model": {
+                "props": {
+                  "offsetX": 0,
+                  "offsetY": 128,
+                  "width": 64,
+                  "height": 64
+                }
+              },
+              "items": [
+                {
+                  "position": {
+                    "x": 8,
+                    "y": 8
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "tree": {
+      "attach": true,
+      "order": 1000,
+      "model": {
+        "type": "model",
+        "name": "objects/decor/natural_objects_01.png"
+      },
+      "is_material": true,
+      "items": [
+        {
+          "model": {
+            "props": {
+              "height": 124,
+              "offsetY": 0
+            }
+          },
+          "items": [
+            {
+              "model": {
+                "props": {
+                  "offsetX": 72,
+                  "width": 112
+                }
+              },
+              "size": {
+                "w": 1.6,
+                "h": 1.84
+              },
+              "collision": {
+                "x": 0.38,
+                "y": 1.36,
+                "w": 0.8,
+                "h": 0.48
+              },
+              "items": [
+                {
+                  "position": {
+                    "x": 37,
+                    "y": 10
+                  }
+                },
+                {
+                  "position": {
+                    "x": 43,
+                    "y": 21.7
+                  }
+                },
+                {
+                  "position": {
+                    "x": 34.8,
+                    "y": 25
+                  }
+                },
+                {
+                  "position": {
+                    "x": 27,
+                    "y": 13
+                  }
+                },
+                {
+                  "position": {
+                    "x": 45.7,
+                    "y": 17
+                  }
+                },
+                {
+                  "position": {
+                    "x": 42,
+                    "y": 10
+                  }
+                },
+                {
+                  "position": {
+                    "x": 40,
+                    "y": 26
+                  }
+                },
+                {
+                  "position": {
+                    "x": 28.5,
+                    "y": 8.7
+                  }
+                },
+                {
+                  "position": {
+                    "x": 45,
+                    "y": 12.8
+                  }
+                },
+                {
+                  "position": {
+                    "x": 48,
+                    "y": 20.8
+                  }
+                },
+                {
+                  "position": {
+                    "x": 40,
+                    "y": 20.5
+                  }
+                },
+                {
+                  "position": {
+                    "x": 33.3,
+                    "y": 22
+                  }
+                },
+                {
+                  "position": {
+                    "x": 37,
+                    "y": 19
+                  }
+                },
+                {
+                  "position": {
+                    "x": 34,
+                    "y": 15
+                  }
+                },
+                {
+                  "position": {
+                    "x": 37,
+                    "y": 13.5
+                  }
+                },
+                {
+                  "position": {
+                    "x": 39,
+                    "y": 18
+                  }
+                },
+                {
+                  "position": {
+                    "x": 37,
+                    "y": 21.5
+                  }
+                },
+                {
+                  "position": {
+                    "x": 34,
+                    "y": 19
+                  }
+                },
+                {
+                  "position": {
+                    "x": 31.9,
+                    "y": 17
+                  }
+                },
+                {
+                  "position": {
+                    "x": 36,
+                    "y": 16
+                  }
+                },
+                {
+                  "position": {
+                    "x": 40,
+                    "y": 16
+                  }
+                },
+                {
+                  "position": {
+                    "x": 5.5,
+                    "y": 2
+                  }
+                },
+                {
+                  "position": {
+                    "x": 3,
+                    "y": 3
+                  }
+                },
+                {
+                  "position": {
+                    "x": 4,
+                    "y": 9
+                  }
+                },
+                {
+                  "position": {
+                    "x": 19.5,
+                    "y": 1.5
+                  }
+                },
+                {
+                  "position": {
+                    "x": 19.2,
+                    "y": 28
+                  }
+                },
+                {
+                  "position": {
+                    "x": 31,
+                    "y": 1.5
+                  }
+                },
+                {
+                  "position": {
+                    "x": 37.5,
+                    "y": 1.5
+                  }
+                }
+              ]
+            },
+            {
+              "model": {
+                "props": {
+                  "offsetX": 0,
+                  "width": 64
+                }
+              },
+              "size": {
+                "w": 1,
+                "h": 2
+              },
+              "collision": {
+                "x": 0,
+                "y": 1.5,
+                "w": 1,
+                "h": 0.3
+              },
+              "items": [
+                {
+                  "position": {
+                    "x": 32,
+                    "y": 15
+                  }
+                },
+                {
+                  "position": {
+                    "x": 39,
+                    "y": 13
+                  }
+                },
+                {
+                  "position": {
+                    "x": 42,
+                    "y": 18
+                  }
+                },
+                {
+                  "position": {
+                    "x": 32,
+                    "y": 23
+                  }
+                },
+                {
+                  "position": {
+                    "x": 3,
+                    "y": 5
+                  }
+                },
+                {
+                  "position": {
+                    "x": 30,
+                    "y": 21
+                  }
+                },
+                {
+                  "position": {
+                    "x": 34,
+                    "y": 10.5
+                  }
+                },
+                {
+                  "position": {
+                    "x": 28.8,
+                    "y": 17
+                  }
+                },
+                {
+                  "position": {
+                    "x": 31,
+                    "y": 12
+                  }
+                },
+                {
+                  "position": {
+                    "x": 32,
+                    "y": 13
+                  }
+                },
+                {
+                  "position": {
+                    "x": 42,
+                    "y": 14
+                  }
+                },
+                {
+                  "position": {
+                    "x": 39,
+                    "y": 23
+                  }
+                },
+                {
+                  "position": {
+                    "x": 45.8,
+                    "y": 24.4
+                  }
+                },
+                {
+                  "position": {
+                    "x": 8.5,
+                    "y": 3
+                  }
+                },
+                {
+                  "position": {
+                    "x": 10,
+                    "y": 5
+                  }
+                },
+                {
+                  "position": {
+                    "x": 19,
+                    "y": 3.5
+                  }
+                },
+                {
+                  "order": 999,
+                  "position": {
+                    "x": 19.6,
+                    "y": 11.5
+                  }
+                },
+                {
+                  "order": 999,
+                  "position": {
+                    "x": 19.2,
+                    "y": 13
+                  }
+                },
+                {
+                  "position": {
+                    "x": 19.3,
+                    "y": 15
+                  }
+                },
+                {
+                  "position": {
+                    "x": 18.9,
+                    "y": 17
+                  }
+                },
+                {
+                  "position": {
+                    "x": 19.7,
+                    "y": 17.4
+                  }
+                },
+                {
+                  "position": {
+                    "x": 19.2,
+                    "y": 18.4
+                  }
+                },
+                {
+                  "position": {
+                    "x": 19.1,
+                    "y": 21
+                  }
+                },
+                {
+                  "position": {
+                    "x": 18.7,
+                    "y": 22
+                  }
+                },
+                {
+                  "position": {
+                    "x": 19,
+                    "y": 24
+                  }
+                },
+                {
+                  "position": {
+                    "x": 19.4,
+                    "y": 25.5
+                  }
+                },
+                {
+                  "position": {
+                    "x": 19,
+                    "y": 30
+                  }
+                },
+                {
+                  "position": {
+                    "x": 19.7,
+                    "y": 32
+                  }
+                },
+                {
+                  "position": {
+                    "x": 18.9,
+                    "y": 32.8
+                  }
+                },
+                {
+                  "position": {
+                    "x": 57.2,
+                    "y": 7
+                  }
+                },
+                {
+                  "position": {
+                    "x": 56.8,
+                    "y": 13
+                  }
+                },
+                {
+                  "position": {
+                    "x": 57.1,
+                    "y": 19
+                  }
+                },
+                {
+                  "position": {
+                    "x": 57.2,
+                    "y": 25
+                  }
+                },
+                {
+                  "position": {
+                    "x": 56.9,
+                    "y": 31
+                  }
+                },
+                {
+                  "position": {
+                    "x": 57,
+                    "y": 34
+                  }
+                },
+                {
+                  "position": {
+                    "x": 56,
+                    "y": 35
+                  }
+                },
+                {
+                  "position": {
+                    "x": 23,
+                    "y": 2.5
+                  }
+                },
+                {
+                  "position": {
+                    "x": 26.5,
+                    "y": 2.1
+                  }
+                },
+                {
+                  "position": {
+                    "x": 35,
+                    "y": 2.4
+                  }
+                },
+                {
+                  "position": {
+                    "x": 41,
+                    "y": 2.7
+                  }
+                },
+                {
+                  "position": {
+                    "x": 46.5,
+                    "y": 2.2
+                  }
+                },
+                {
+                  "position": {
+                    "x": 48.7,
+                    "y": 2.7
+                  }
+                },
+                {
+                  "position": {
+                    "x": 51,
+                    "y": 2.2
+                  }
+                },
+                {
+                  "position": {
+                    "x": 55,
+                    "y": 2.2
+                  }
+                },
+                {
+                  "position": {
+                    "x": 56,
+                    "y": 2.7
+                  }
+                },
+                {
+                  "position": {
+                    "x": 57,
+                    "y": 3
+                  }
+                },
+                {
+                  "position": {
+                    "x": 57.2,
+                    "y": 4
+                  }
+                },
+                {
+                  "position": {
+                    "x": 24,
+                    "y": 35.1
+                  }
+                },
+                {
+                  "position": {
+                    "x": 30,
+                    "y": 34.9
+                  }
+                },
+                {
+                  "position": {
+                    "x": 36,
+                    "y": 34.8
+                  }
+                },
+                {
+                  "position": {
+                    "x": 42,
+                    "y": 34.9
+                  }
+                },
+                {
+                  "position": {
+                    "x": 48,
+                    "y": 35.2
+                  }
+                },
+                {
+                  "position": {
+                    "x": 52,
+                    "y": 35.1
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "is_material": false,
+          "model": {
+            "props": {
+              "offsetX": 0,
+              "offsetY": 192,
+              "width": 64,
+              "height": 60
+            }
+          },
+          "size": {
+            "w": 1,
+            "h": 1
+          },
+          "collision": {
+            "x": 0,
+            "y": 0.5,
+            "w": 1,
+            "h": 0.5
+          },
+          "items": [
+            {
+              "model": {
+                "props": {
+                  "offsetX": 64
+                }
+              },
+              "items": [
+                {
+                  "position": {
+                    "x": 35.5,
+                    "y": 20.1
+                  }
+                },
+                {
+                  "position": {
+                    "x": 34,
+                    "y": 18
+                  }
+                },
+                {
+                  "order": 999,
+                  "position": {
+                    "x": 39,
+                    "y": 20
+                  }
+                },
+                {
+                  "order": 1001,
+                  "position": {
+                    "x": 41,
+                    "y": 16
+                  }
+                },
+                {
+                  "position": {
+                    "x": 32,
+                    "y": 20
+                  }
+                },
+                {
+                  "position": {
+                    "x": 35,
+                    "y": 14
+                  }
+                },
+                {
+                  "position": {
+                    "x": 38,
+                    "y": 16
+                  }
+                },
+                {
+                  "position": {
+                    "x": 19,
+                    "y": 7
+                  }
+                },
+                {
+                  "position": {
+                    "x": 19,
+                    "y": 11
+                  }
+                },
+                {
+                  "position": {
+                    "x": 19,
+                    "y": 20
+                  }
+                },
+                {
+                  "position": {
+                    "x": 19,
+                    "y": 27
+                  }
+                },
+                {
+                  "position": {
+                    "x": 19,
+                    "y": 35
+                  }
+                },
+                {
+                  "position": {
+                    "x": 19.8,
+                    "y": 35.2
+                  }
+                },
+                {
+                  "position": {
+                    "x": 21.2,
+                    "y": 35.8
+                  }
+                },
+                {
+                  "position": {
+                    "x": 25,
+                    "y": 3
+                  }
+                },
+                {
+                  "position": {
+                    "x": 33.5,
+                    "y": 2.6
+                  }
+                },
+                {
+                  "position": {
+                    "x": 45,
+                    "y": 2.6
+                  }
+                },
+                {
+                  "position": {
+                    "x": 53,
+                    "y": 2.6
+                  }
+                },
+                {
+                  "order": 1001,
+                  "position": {
+                    "x": 48,
+                    "y": 2.6
+                  }
+                },
+                {
+                  "position": {
+                    "x": 26,
+                    "y": 36.1
+                  }
+                },
+                {
+                  "position": {
+                    "x": 28,
+                    "y": 35.8
+                  }
+                },
+                {
+                  "position": {
+                    "x": 32.5,
+                    "y": 35.8
+                  }
+                },
+                {
+                  "position": {
+                    "x": 34,
+                    "y": 36
+                  }
+                },
+                {
+                  "position": {
+                    "x": 38,
+                    "y": 36
+                  }
+                },
+                {
+                  "position": {
+                    "x": 40,
+                    "y": 36.1
+                  }
+                },
+                {
+                  "position": {
+                    "x": 44,
+                    "y": 36.1
+                  }
+                },
+                {
+                  "position": {
+                    "x": 50,
+                    "y": 36
+                  }
+                },
+                {
+                  "position": {
+                    "x": 54,
+                    "y": 36
+                  }
+                },
+                {
+                  "position": {
+                    "x": 57,
+                    "y": 6
+                  }
+                },
+                {
+                  "position": {
+                    "x": 57,
+                    "y": 9.5
+                  }
+                },
+                {
+                  "position": {
+                    "x": 57,
+                    "y": 11
+                  }
+                },
+                {
+                  "position": {
+                    "x": 57,
+                    "y": 15.5
+                  }
+                },
+                {
+                  "position": {
+                    "x": 57,
+                    "y": 17
+                  }
+                },
+                {
+                  "position": {
+                    "x": 56.9,
+                    "y": 22
+                  }
+                },
+                {
+                  "position": {
+                    "x": 56.4,
+                    "y": 22.5
+                  }
+                },
+                {
+                  "position": {
+                    "x": 57.1,
+                    "y": 22.7
+                  }
+                },
+                {
+                  "position": {
+                    "x": 57,
+                    "y": 28
+                  }
+                },
+                {
+                  "position": {
+                    "x": 56.7,
+                    "y": 32.7
+                  }
+                }
+              ]
+            },
+            {
+              "model": {
+                "props": {
+                  "offsetX": 0
+                }
+              },
+              "items": [
+                {
+                  "position": {
+                    "x": 29,
+                    "y": 3.2
+                  }
+                },
+                {
+                  "position": {
+                    "x": 43,
+                    "y": 3.2
+                  }
+                },
+                {
+                  "position": {
+                    "x": 23,
+                    "y": 36
+                  }
+                },
+                {
+                  "position": {
+                    "x": 46,
+                    "y": 36
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "items": [
+            {
+              "model": {
+                "props": {
+                  "offsetX": 207,
+                  "offsetY": 144,
+                  "width": 33,
+                  "height": 40
+                }
+              },
+              "size": {
+                "w": 0.5,
+                "h": 0.5
+              },
+              "collision": {
+                "w": 0.2,
+                "h": 0.2,
+                "x": 0.15,
+                "y": 0.15
+              },
+              "items": [
+                {
+                  "position": {
+                    "x": 11,
+                    "y": 11
+                  }
+                },
+                {
+                  "position": {
+                    "x": 4.5,
+                    "y": 8.3
+                  }
+                },
+                {
+                  "position": {
+                    "x": 3.5,
+                    "y": 7.5
+                  }
+                }
+              ]
+            },
+            {
+              "model": {
+                "props": {
+                  "offsetX": 0,
+                  "offsetY": 256,
+                  "width": 128,
+                  "height": 60
+                }
+              },
+              "size": {
+                "w": 2,
+                "h": 1
+              },
+              "collision": {
+                "x": 0,
+                "y": 0.4,
+                "w": 2,
+                "h": 0.6
+              },
+              "items": [
+                {
+                  "position": {
+                    "x": 8.6,
+                    "y": 10.6
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "bridge": {
+      "attach": true,
+      "order": 9000,
+      "is_material": false,
+      "model": {
+        "type": "tileset",
+        "name": "tilesets/bridge.png",
+        "chunk_size": {
+          "w": 64,
+          "h": 64
+        },
+        "start_position": {
+          "x": 2,
+          "y": 0
+        },
+        "tiles": [[[0, 0], [1, 0], "repeat 6", [2, 0]]]
+      },
+      "size": {
+        "w": 9,
+        "h": 1
+      },
+      "items": [
+        {
+          "position": {
+            "x": 11.5,
+            "y": 9
+          }
+        }
+      ]
+    },
+    "dirt": {
+      "attach": true,
+      "order": 9000,
+      "is_material": false,
+      "model": {
+        "type": "tileset",
+        "name": "tilesets/dirt.png",
+        "chunk_size": {
+          "w": 64,
+          "h": 64
+        },
+        "tiles": [
+          [
+            [1, 3],
+            [0, 2],
+            [2, 2],
+            [0, 2],
+            [3, 3]
+          ],
+          [
+            [3, 0],
+            [0, 0],
+            [0, 0],
+            [0, 0],
+            [4, 0]
+          ],
+          "repeat 1",
+          [
+            [1, 5],
+            [6, 0],
+            [5, 0],
+            [6, 0],
+            [3, 5]
+          ]
+        ]
+      },
+      "size": {
+        "w": 5,
+        "h": 4
+      },
+      "items": [
+        {
+          "position": {
+            "x": 25,
+            "y": 28.5
+          }
+        },
+        {
+          "position": {
+            "x": 31,
+            "y": 28.5
+          }
+        }
+      ]
+    },
+    "chicken_house": {
+      "attach": true,
+      "order": 900,
+      "is_material": true,
+      "model": {
+        "type": "model",
+        "name": "objects/static/chicken_house.png"
+      },
+      "size": {
+        "w": 3,
+        "h": 3
+      },
+      "collision": {
+        "x": 0,
+        "y": 0.7,
+        "w": 3,
+        "h": 2.3
+      },
+      "items": [
+        {
+          "position": {
+            "x": 26,
+            "y": 28.5
+          }
+        },
+        {
+          "position": {
+            "x": 32,
+            "y": 28.5
+          }
+        }
+      ]
+    },
+    "statue": {
+      "attach": true,
+      "order": 2000,
+      "is_material": true,
+      "model": {
+        "type": "model",
+        "name": "objects/decor/props_01.png",
+        "props": {
+          "offsetX": 1780,
+          "offsetY": 84,
+          "width": 148,
+          "height": 288
+        }
+      },
+      "size": {
+        "w": 0.77,
+        "h": 1.5
+      },
+      "collision": {
+        "x": 0,
+        "y": 0.7,
+        "w": 0.77,
+        "h": 0.8
+      },
+      "items": [
+        {
+          "position": {
+            "x": 37,
+            "y": 18
+          }
+        }
+      ]
+    },
     "player": {
+      "attach": true,
       "controller": {
         "name": "player",
         "meta": {
           "speed": 6
         }
       },
-      "order": 900,
+      "order": 5000,
       "is_material": true,
       "model": {
         "type": "sprite",
@@ -24,8 +1402,8 @@
         }
       },
       "position": {
-        "x": 50,
-        "y": 50
+        "x": 20,
+        "y": 5
       },
       "size": {
         "w": 2,
@@ -39,40 +1417,42 @@
       }
     },
     "npc": {
-      "attach": false,
-      "controller": {
-        "name": "npc",
-        "meta": {
-          "speed": 2
-        }
-      },
+      "attach": true,
       "order": 900,
       "is_material": true,
       "model": {
         "type": "sprite",
-        "name": "Character_001.png",
+        "name": "entity/npc/human/npc_01.png",
         "props": {
           "isAutomatic": false,
-          "updateRate": 100,
-          "chunkSizeX": 72,
-          "chunkSizeY": 72
+          "updateRate": 300,
+          "chunkSizeX": 64,
+          "chunkSizeY": 64
         }
       },
       "size": {
-        "w": 1.2,
-        "h": 1.5
+        "w": 1,
+        "h": 1
       },
       "collision": {
-        "x": 0,
-        "y": 0.3,
-        "w": 1.2,
-        "h": 1.2
+        "x": 0.15,
+        "y": 0,
+        "w": 0.7,
+        "h": 1
       },
       "items": [
         {
+          "model": {
+            "props": {
+              "defaultActiveCol": 2
+            }
+          },
+          "controller": {
+            "name": "npc_quest_qiver"
+          },
           "position": {
-            "x": 3,
-            "y": 5
+            "x": 11,
+            "y": 7.5
           }
         }
       ]
@@ -83,19 +1463,20 @@
         "name": "slime",
         "meta": {
           "speed": 2,
-          "attackDistance": 0.3
+          "attackDistance": 0.3,
+          "fieldOfView": 15
         }
       },
       "order": 900,
       "is_material": true,
       "model": {
         "type": "sprite",
-        "name": "slime.png",
+        "name": "entity/enemy/slime.png",
         "props": {
           "isAutomatic": false,
           "updateRate": 130,
-          "chunkSizeX": 16,
-          "chunkSizeY": 16
+          "chunkSizeX": 64,
+          "chunkSizeY": 64
         }
       },
       "size": {
@@ -105,8 +1486,32 @@
       "items": [
         {
           "position": {
-            "x": 3,
-            "y": 5
+            "x": 30,
+            "y": 30
+          }
+        },
+        {
+          "position": {
+            "x": 50,
+            "y": 30
+          }
+        },
+        {
+          "position": {
+            "x": 10,
+            "y": 40
+          }
+        },
+        {
+          "position": {
+            "x": 50,
+            "y": 30
+          }
+        },
+        {
+          "position": {
+            "x": 50,
+            "y": 10
           }
         }
       ]

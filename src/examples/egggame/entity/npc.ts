@@ -5,18 +5,29 @@ import { Level } from "@/library/api/level";
 import { AbstractController } from "@/library/api/controller";
 import type { Nullable } from "@/library/api/data/common";
 import {
-  AbstractEntityAnimator,
+  type AnimationStateItem,
   StateEntityAnimator,
 } from "@/library/impl/entity/animator";
 
-class NpcAnimator extends StateEntityAnimator {
+abstract class NpcAnimator extends StateEntityAnimator {
+  protected constructor(
+    states: Map<string, AnimationStateItem>,
+    initialState: string,
+  ) {
+    super(states, initialState);
+  }
+}
+
+class QuestGiverAnimator extends StateEntityAnimator {
   constructor() {
     super(
       new Map(
         Object.entries({
           hold: {
-            animatorRow: 0,
-            maxItemIndex: 1,
+            animatorRow: 1,
+            minItemIndex: 2,
+            maxItemIndex: 4,
+            animationSpeedMultiplier: 0.3,
           },
         }),
       ),
@@ -25,11 +36,12 @@ class NpcAnimator extends StateEntityAnimator {
   }
 }
 
-export class SimpleNpcController extends MovableEntityController<Rect2D> {
-  private readonly animator: AbstractEntityAnimator = new NpcAnimator();
+export abstract class NpcController extends MovableEntityController<Rect2D> {
+  private readonly animator: NpcAnimator;
 
-  constructor(baseEntitySpeed: number = 3) {
+  protected constructor(baseEntitySpeed: number = 3, animator: NpcAnimator) {
     super(baseEntitySpeed);
+    this.animator = animator;
   }
 
   onUpdate(
@@ -48,5 +60,11 @@ export class SimpleNpcController extends MovableEntityController<Rect2D> {
     controller: AbstractController,
   ): Nullable<Rect2D> {
     return null;
+  }
+}
+
+export class QuestGiverNpcController extends NpcController {
+  constructor() {
+    super(3, new QuestGiverAnimator());
   }
 }
