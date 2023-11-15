@@ -1,13 +1,13 @@
 import { MovableEntityController } from "@/library/impl/entity/controller/base";
 import { Rect2D } from "@/library/api/data/rect";
-import { DynamicEntity, Entity } from "@/library/api/data/entity";
-import { Level } from "@/library/api/level";
-import { AbstractController } from "@/library/api/controller";
+import { DynamicEntity } from "@/library/api/data/entity";
 import type { Nullable } from "@/library/api/data/common";
 import {
   type AnimationStateItem,
   StateEntityAnimator,
 } from "@/library/impl/entity/animator";
+import { Level } from "@/library/api/level";
+import { AbstractController } from "@/library/api/controller";
 
 abstract class NpcAnimator extends StateEntityAnimator {
   protected constructor(
@@ -44,7 +44,7 @@ export abstract class NpcController extends MovableEntityController<Rect2D> {
     this.animator = animator;
   }
 
-  onUpdate(
+  public onUpdate(
     entity: DynamicEntity<Rect2D>,
     level: Level<Rect2D>,
     controller: AbstractController,
@@ -54,11 +54,7 @@ export abstract class NpcController extends MovableEntityController<Rect2D> {
     this.animator.animate(entity.primaryModel);
   }
 
-  moveEntity(
-    entity: Entity<Rect2D>,
-    level: Level<Rect2D>,
-    controller: AbstractController,
-  ): Nullable<Rect2D> {
+  public moveEntity(): Nullable<Rect2D> {
     return null;
   }
 }

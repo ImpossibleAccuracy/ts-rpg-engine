@@ -40,10 +40,10 @@ export class AssetsLevelBuilder2D extends AssetsLevelBuilder<
   LevelJson
 > {
   constructor(
-    path: string,
+    baseLevelPath: string,
     controllers: Map<string, EntityControllerFactory<Rect2D>>,
   ) {
-    super(path, controllers);
+    super(baseLevelPath, controllers);
   }
 
   public calculateLevelDimensions(json: LevelJson): Rect2D {

@@ -1,0 +1,566 @@
+{
+  "size": {
+    "w": 35,
+    "h": 25
+  },
+  "objects": {
+    "wall": {
+      "attach": true,
+      "order": 1,
+      "is_material": true,
+      "model": {
+        "type": "model",
+        "name": "transparent"
+      },
+      "items": [
+        {
+          "items": [
+            {
+              "position": {
+                "x": 0,
+                "y": 0
+              },
+              "size": {
+                "w": 3,
+                "h": 15
+              }
+            },
+            {
+              "position": {
+                "x": 22,
+                "y": 0
+              },
+              "size": {
+                "w": 3,
+                "h": 15
+              }
+            },
+            {
+              "position": {
+                "x": 3,
+                "y": 0
+              },
+              "size": {
+                "w": 19,
+                "h": 2.5
+              }
+            }
+          ]
+        },
+        {
+          "items": [
+            {
+              "position": {
+                "x": 3,
+                "y": 12
+              },
+              "size": {
+                "w": 9,
+                "h": 3
+              }
+            },
+            {
+              "position": {
+                "x": 12,
+                "y": 9.85
+              },
+              "size": {
+                "w": 10,
+                "h": 37.15
+              }
+            },
+            {
+              "position": {
+                "x": 12,
+                "y": 2.5
+              },
+              "size": {
+                "w": 10,
+                "h": 6.1
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "water": {
+      "attach": true,
+      "order": 10000,
+      "is_material": false,
+      "model": {
+        "type": "sprite",
+        "name": "tilesets/water.png",
+        "props": {
+          "isAutomatic": true,
+          "updateRate": 250,
+          "spriteWidth": 40,
+          "spriteHeight": 40,
+          "chunkSizeX": 128,
+          "chunkSizeY": 128,
+          "repeat": true
+        }
+      },
+      "size": {
+        "w": 35,
+        "h": 25
+      },
+      "position": {
+        "x": 0,
+        "y": 0
+      }
+    },
+    "ground": {
+      "order": 9999,
+      "is_material": false,
+      "model": {
+        "type": "tileset",
+        "name": "tilesets/grass.png",
+        "chunk_size": {
+          "w": 64,
+          "h": 64
+        }
+      },
+      "items": [
+        {
+          "model": {
+            "tiles": [
+              [[1, 3], [2, 3], "repeat 7", [3, 3]],
+              [[1, 4], [1, 0], [2, 0], [1, 0], [2, 0], [1, 0], [2, 0], [1, 0], [2, 0], [3, 4]],
+              "repeat 7",
+              [[1, 5], [2, 5], "repeat 7", [3, 5]]
+            ]
+          },
+          "size": {
+            "w": 10,
+            "h": 10
+          },
+          "position": {
+            "x": 2.5,
+            "y": 2.5
+          }
+        }
+      ]
+    },
+    "stone": {
+      "attach": true,
+      "order": 1000,
+      "is_material": true,
+      "items": [
+        {
+          "model": {
+            "type": "model",
+            "name": "objects/decor/natural_objects_01.png",
+            "props": {
+              "offsetX": 320,
+              "offsetY": 268,
+              "width": 64,
+              "height": 48
+            }
+          },
+          "size": {
+            "w": 1,
+            "h": 0.75
+          },
+          "items": [
+            {
+              "position": {
+                "x": 6,
+                "y": 11
+              }
+            },
+            {
+              "position": {
+                "x": 10,
+                "y": 4
+              }
+            },
+            {
+              "position": {
+                "x": 3.5,
+                "y": 5.3
+              }
+            }
+          ]
+        },
+        {
+          "attach": false,
+          "model": {
+            "type": "model",
+            "name": "objects/decor/natural_objects_02.png"
+          },
+          "size": {
+            "w": 1,
+            "h": 1
+          },
+          "items": [
+            {
+              "model": {
+                "props": {
+                  "offsetX": 0,
+                  "offsetY": 0,
+                  "width": 64,
+                  "height": 64
+                }
+              },
+              "items": [
+                {
+                  "position": {
+                    "y": 7,
+                    "x": 7
+                  }
+                }
+              ]
+            },
+            {
+              "model": {
+                "props": {
+                  "offsetX": 0,
+                  "offsetY": 128,
+                  "width": 64,
+                  "height": 64
+                }
+              },
+              "items": [
+                {
+                  "position": {
+                    "x": 8,
+                    "y": 8
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "tree": {
+      "attach": true,
+      "order": 1000,
+      "model": {
+        "type": "model",
+        "name": "objects/decor/natural_objects_01.png"
+      },
+      "is_material": true,
+      "items": [
+        {
+          "model": {
+            "props": {
+              "height": 124,
+              "offsetY": 0
+            }
+          },
+          "items": [
+            {
+              "model": {
+                "props": {
+                  "offsetX": 72,
+                  "width": 112
+                }
+              },
+              "size": {
+                "w": 1.6,
+                "h": 1.84
+              },
+              "collision": {
+                "x": 0.38,
+                "y": 1.36,
+                "w": 0.8,
+                "h": 0.48
+              },
+              "items": [
+                {
+                  "position": {
+                    "x": 5.5,
+                    "y": 2
+                  }
+                },
+                {
+                  "position": {
+                    "x": 3,
+                    "y": 3
+                  }
+                },
+                {
+                  "position": {
+                    "x": 4,
+                    "y": 9
+                  }
+                }
+              ]
+            },
+            {
+              "model": {
+                "props": {
+                  "offsetX": 0,
+                  "width": 64
+                }
+              },
+              "size": {
+                "w": 1,
+                "h": 2
+              },
+              "collision": {
+                "x": 0,
+                "y": 1.5,
+                "w": 1,
+                "h": 0.3
+              },
+              "items": [
+                {
+                  "position": {
+                    "x": 3,
+                    "y": 5
+                  }
+                },
+                {
+                  "position": {
+                    "x": 8.5,
+                    "y": 3
+                  }
+                },
+                {
+                  "position": {
+                    "x": 10,
+                    "y": 5
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "is_material": false,
+          "model": {
+            "props": {
+              "offsetX": 0,
+              "offsetY": 192,
+              "width": 64,
+              "height": 60
+            }
+          },
+          "size": {
+            "w": 1,
+            "h": 1
+          },
+          "collision": {
+            "x": 0,
+            "y": 0.5,
+            "w": 1,
+            "h": 0.5
+          },
+          "items": []
+        },
+        {
+          "items": [
+            {
+              "model": {
+                "props": {
+                  "offsetX": 207,
+                  "offsetY": 144,
+                  "width": 33,
+                  "height": 40
+                }
+              },
+              "size": {
+                "w": 0.5,
+                "h": 0.5
+              },
+              "collision": {
+                "w": 0.2,
+                "h": 0.2,
+                "x": 0.15,
+                "y": 0.15
+              },
+              "items": [
+                {
+                  "position": {
+                    "x": 11,
+                    "y": 11
+                  }
+                },
+                {
+                  "position": {
+                    "x": 4.5,
+                    "y": 8.3
+                  }
+                },
+                {
+                  "position": {
+                    "x": 3.5,
+                    "y": 7.5
+                  }
+                }
+              ]
+            },
+            {
+              "model": {
+                "props": {
+                  "offsetX": 0,
+                  "offsetY": 256,
+                  "width": 128,
+                  "height": 60
+                }
+              },
+              "size": {
+                "w": 2,
+                "h": 1
+              },
+              "collision": {
+                "x": 0,
+                "y": 0.4,
+                "w": 2,
+                "h": 0.6
+              },
+              "items": [
+                {
+                  "position": {
+                    "x": 8.6,
+                    "y": 10.6
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "player": {
+      "attach": true,
+      "controller": {
+        "name": "player_start",
+        "meta": {
+          "speed": 6
+        }
+      },
+      "order": 5000,
+      "is_material": true,
+      "model": {
+        "type": "sprite",
+        "name": "entity/player/player.png",
+        "props": {
+          "isAutomatic": false,
+          "updateRate": 200,
+          "chunkSizeX": 192,
+          "chunkSizeY": 192
+        }
+      },
+      "position": {
+        "x": 5,
+        "y": 5
+      },
+      "size": {
+        "w": 2,
+        "h": 2
+      },
+      "collision": {
+        "x": 0.7,
+        "y": 0.6,
+        "w": 0.6,
+        "h": 0.8
+      }
+    },
+    "npc": {
+      "attach": true,
+      "order": 900,
+      "is_material": true,
+      "model": {
+        "type": "sprite",
+        "name": "entity/npc/human/npc_01.png",
+        "props": {
+          "isAutomatic": false,
+          "updateRate": 300,
+          "chunkSizeX": 64,
+          "chunkSizeY": 64
+        }
+      },
+      "size": {
+        "w": 1,
+        "h": 1
+      },
+      "collision": {
+        "x": 0.15,
+        "y": 0,
+        "w": 0.7,
+        "h": 1
+      },
+      "items": [
+        {
+          "model": {
+            "props": {
+              "defaultActiveCol": 2
+            }
+          },
+          "controller": {
+            "name": "npc_quest_qiver"
+          },
+          "position": {
+            "x": 11,
+            "y": 7.5
+          }
+        }
+      ]
+    },
+    "bridge": {
+      "attach": true,
+      "order": 9000,
+      "is_material": false,
+      "model": {
+        "type": "tileset",
+        "name": "tilesets/bridge.png",
+        "chunk_size": {
+          "w": 64,
+          "h": 64
+        },
+        "start_position": {
+          "x": 2,
+          "y": 0
+        },
+        "tiles": [
+          [
+            [0, 0],
+            [1, 0],
+            [2, 0]
+          ]
+        ]
+      },
+      "size": {
+        "w": 3,
+        "h": 1
+      },
+      "items": [
+        {
+          "position": {
+            "x": 11.5,
+            "y": 9
+          }
+        }
+      ]
+    },
+    "boat": {
+      "attach": true,
+      "order": 1000,
+      "model": {
+        "type": "model",
+        "name": "objects/static/boat.png",
+        "props": {
+          "offsetX": 172,
+          "offsetY": 144,
+          "width": 40,
+          "height": 108
+        }
+      },
+      "size": {
+        "w": 0.7,
+        "h": 1.89
+      },
+      "items": [
+        {
+          "position": {
+            "x": 14,
+            "y": 8.7
+          }
+        }
+      ]
+    }
+  }
+}

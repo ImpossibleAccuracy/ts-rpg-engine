@@ -41,7 +41,7 @@ const dialogDimensions = {
 };
 
 export class DialogVisualizer extends CanvasVisualizer {
-  private static readonly maxDialogWidth: number = 500;
+  private static readonly maxDialogWidth: number = 350;
   private static readonly minDialogWidth: number = 200;
   private static readonly fontSize: number = 16;
   private static readonly fontName: string = "Courier New";
@@ -73,12 +73,10 @@ export class DialogVisualizer extends CanvasVisualizer {
       dialogDimensions.personBoxSize +
       dialogDimensions.contentBoxMarginStart;
 
-    const maxWidth = Math.min(
-      this.renderer.canvas.width - widthWithoutText,
+    const textMeasurement = this.getTextMeasurement(
+      message.content,
       DialogVisualizer.maxDialogWidth,
     );
-
-    const textMeasurement = this.getTextMeasurement(message.content, maxWidth);
 
     const chucksCount = Math.ceil(
       Math.max(
@@ -254,18 +252,12 @@ export class DialogVisualizer extends CanvasVisualizer {
       const lines = new Array<string>();
 
       let prevPos = 0;
-      for (let i = 1; i < parts.length; i++) {
-        if (i == parts.length - 1) {
-          lines.push(parts.slice(prevPos).join(" "));
-
-          cols += 1;
-          break;
-        }
-
+      for (let i = 0; i < parts.length; i++) {
         const substr = parts
           .slice(prevPos, i + 1)
           .join(" ")
           .trim();
+
         const metrics = this.renderer.context.measureText(substr);
 
         if (metrics.width >= maxWidth) {
@@ -274,6 +266,12 @@ export class DialogVisualizer extends CanvasVisualizer {
           prevPos = i;
           cols += 1;
         }
+      }
+
+      if (prevPos < parts.length) {
+        lines.push(parts.slice(prevPos).join(" ").trim());
+
+        cols += 1;
       }
 
       return {

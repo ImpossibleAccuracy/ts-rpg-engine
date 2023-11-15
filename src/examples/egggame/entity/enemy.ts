@@ -202,22 +202,20 @@ class WraithAnimator extends EnemyAnimator {
 
 export class EnemyController extends MovableEntityController<Rect2D> {
   private readonly animator: EnemyAnimator;
-  private readonly attackRange: number;
-  private readonly fieldOfView: number;
+  private isFollowPlayer: boolean = false;
 
   constructor(
     baseEntitySpeed: number,
     animator: EnemyAnimator,
-    attackRang: number,
-    fieldOfView: number,
+    private readonly attackRange: number,
+    private readonly fieldOfView: number,
+    private readonly followUntil: number,
   ) {
     super(baseEntitySpeed);
     this.animator = animator;
-    this.attackRange = attackRang;
-    this.fieldOfView = fieldOfView;
   }
 
-  onUpdate(
+  public onUpdate(
     entity: DynamicEntity<Rect2D>,
     level: Level<Rect2D>,
     controller: AbstractController,
@@ -228,7 +226,10 @@ export class EnemyController extends MovableEntityController<Rect2D> {
     this.animator.animate(entity.primaryModel);
   }
 
-  moveEntity(entity: Entity<Rect2D>, level: Level<Rect2D>): Nullable<Rect2D> {
+  public moveEntity(
+    entity: Entity<Rect2D>,
+    level: Level<Rect2D>,
+  ): Nullable<Rect2D> {
     const player = level.findPlayer();
 
     const entityCollision = entity.getCollisionRect();
@@ -243,9 +244,17 @@ export class EnemyController extends MovableEntityController<Rect2D> {
       .fixRect();
 
     const speed = this.getSpeed();
-    const distance = this.calculateHypotenuse(distanceToPlayer);
+    const distance = calculateHypotenuse(
+      distanceToPlayer.posX,
+      distanceToPlayer.posY,
+    );
 
-    if (distance < this.fieldOfView) {
+    if (
+      distance < this.fieldOfView ||
+      (this.isFollowPlayer && distance < this.followUntil)
+    ) {
+      this.isFollowPlayer = true;
+
       const sinX = distance / distanceToPlayer.posX;
       const sinY = distance / distanceToPlayer.posY;
 
@@ -258,6 +267,7 @@ export class EnemyController extends MovableEntityController<Rect2D> {
 
       return displacement;
     } else {
+      this.isFollowPlayer = false;
       return null;
     }
   }
@@ -298,34 +308,52 @@ export class EnemyController extends MovableEntityController<Rect2D> {
 }
 
 export class SlimeController extends EnemyController {
-  constructor(speed?: number, attackDistance?: number, fieldOfView?: number) {
+  constructor(
+    speed?: number,
+    attackDistance?: number,
+    fieldOfView?: number,
+    followUntil?: number,
+  ) {
     super(
       speed ?? 2,
       new SlimeAnimator(),
       attackDistance ?? 1,
-      fieldOfView ?? 10,
+      fieldOfView ?? 4,
+      followUntil ?? 10,
     );
   }
 }
 
 export class GoblinController extends EnemyController {
-  constructor(speed?: number, attackDistance?: number, fieldOfView?: number) {
+  constructor(
+    speed?: number,
+    attackDistance?: number,
+    fieldOfView?: number,
+    followUntil?: number,
+  ) {
     super(
       speed ?? 4,
       new GoblinAnimator(),
-      attackDistance ?? 1.5,
-      fieldOfView ?? 10,
+      attackDistance ?? 0.5,
+      fieldOfView ?? 4,
+      followUntil ?? 10,
     );
   }
 }
 
 export class WraithController extends EnemyController {
-  constructor(speed?: number, attackDistance?: number, fieldOfView?: number) {
+  constructor(
+    speed?: number,
+    attackDistance?: number,
+    fieldOfView?: number,
+    followUntil?: number,
+  ) {
     super(
       speed ?? 4,
       new WraithAnimator(),
       attackDistance ?? 0.5,
-      fieldOfView ?? 10,
+      fieldOfView ?? 4,
+      followUntil ?? 10,
     );
   }
 }

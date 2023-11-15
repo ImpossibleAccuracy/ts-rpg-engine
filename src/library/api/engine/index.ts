@@ -2,6 +2,7 @@ import { AbstractRenderer } from "@/library/api/visualizer";
 import { AbstractController } from "@/library/api/controller";
 import { Looper } from "@/library/api/looper";
 import type { AbstractActivity } from "@/library/api/activity";
+import type { Nullable } from "@/library/api/data/common";
 
 export enum GameState {
   RUNNING,
@@ -46,6 +47,14 @@ export class GameEngine<D extends AbstractRenderer> {
         this.start();
       }
     }
+  }
+
+  public findActivity<T extends AbstractActivity<D>>(
+    predicate: (el: AbstractActivity<D>) => boolean,
+  ): Nullable<T> {
+    const activity = this.activities.find(predicate) ?? null;
+
+    return activity as Nullable<T>;
   }
 
   public attachActivity(activity: AbstractActivity<D>) {

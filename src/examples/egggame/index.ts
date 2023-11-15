@@ -6,21 +6,15 @@ import { EggWorldActivity } from "@/examples/egggame/actiivity/world";
 
 export async function createEggWorld(
   canvas: HTMLCanvasElement,
-  assetsUrl: string,
   isDeveloperMode: boolean = false,
 ) {
   const renderer = new CanvasRenderer(canvas);
   const controller = new MouseKeyboardController();
   const looper = new SimpleLooper();
 
-  const startActivity = EggWorldActivity.build(
-    renderer,
-    assetsUrl,
-    "levels/level1.json",
-    isDeveloperMode,
-  );
+  const startActivity = EggWorldActivity.build(renderer, isDeveloperMode);
 
-  await startActivity.load();
+  startActivity.loadLevel("start");
 
   return new GameEngine(controller, looper, startActivity, GameState.RUNNING);
 }

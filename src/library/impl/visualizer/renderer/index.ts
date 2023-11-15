@@ -7,8 +7,13 @@ import { SpriteArrayModel } from "@/library/impl/models/spriteArrayModel";
 import { SpriteModel } from "@/library/api/models/spriteModel";
 import { TilesetModel } from "@/library/impl/models/tilesetModel";
 import { Rect2D } from "@/library/api/data/rect";
+import { TextModel } from "@/library/impl/models/textModel";
 
 export class CanvasRenderer extends AbstractRenderer {
+  private static readonly defaultFontSize: number = 16;
+  private static readonly defaultFontName: string = "Courier New";
+  private static readonly defaultFontColor: string = "black";
+
   public readonly canvas: HTMLCanvasElement;
   public readonly context: CanvasRenderingContext2D;
 
@@ -40,6 +45,9 @@ export class CanvasRenderer extends AbstractRenderer {
     const modelSizeX = modelRect.sizeX * blockSizeX;
     const modelSizeY = modelRect.sizeY * blockSizeY;
 
+    if (model instanceof TextModel) {
+      this.drawTextModel(model, startX, startY);
+    }
     if (model instanceof SpriteModel) {
       if (model.spriteMetadata.isAutomatic) {
         model.tryNextSprite();
@@ -87,7 +95,9 @@ export class CanvasRenderer extends AbstractRenderer {
     h: number,
     w: number,
   ) {
-    if (model instanceof SpriteModel) {
+    if (model instanceof TextModel) {
+      this.drawTextModel(model, x, y);
+    } else if (model instanceof SpriteModel) {
       if (model.spriteMetadata.isAutomatic) {
         model.tryNextSprite();
       }
@@ -106,6 +116,20 @@ export class CanvasRenderer extends AbstractRenderer {
     } else {
       throw new Error("Invalid model type: " + model);
     }
+  }
+
+  public drawTextModel(model: TextModel, x: number, y: number) {
+    const fontSize = model.metadata?.fontSize ?? CanvasRenderer.defaultFontSize;
+    const fontName = model.metadata?.fontName ?? CanvasRenderer.defaultFontName;
+    const fontColor =
+      model.metadata?.fontColor ?? CanvasRenderer.defaultFontColor;
+
+    this.context.font = `${fontSize}px ${fontName} ${
+      model.metadata?.isFontBold == true ? "bold" : ""
+    }`;
+    this.context.fillStyle = fontColor;
+
+    this.context.fillText(model.text, x, y + fontSize);
   }
 
   public drawTilesetModel(

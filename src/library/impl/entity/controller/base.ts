@@ -5,8 +5,8 @@ import {
   Entity,
   EntityController,
 } from "@/library/api/data/entity";
-import type { Level } from "@/library/api/level";
-import type { AbstractController } from "@/library/api/controller";
+import { Level } from "@/library/api/level";
+import { AbstractController } from "@/library/api/controller";
 import type { Nullable } from "@/library/api/data/common";
 import { roundNumber } from "@/library/api/utils/number";
 

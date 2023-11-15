@@ -1,16 +1,18 @@
 import { GameWorldActivity } from "@/library/impl/activity/world";
 import { CanvasRenderer } from "@/library/impl/visualizer/renderer";
-import { Level, LevelBuilder } from "@/library/api/level";
+import { LevelBuilder } from "@/library/api/level";
 import { Rect2D } from "@/library/api/data/rect";
 import { DefaultEntityFactory } from "@/library/impl/entity/factory";
-import { AssetsLevelBuilder2D } from "@/library/impl/level";
 import {
   FullMapVisualizer,
   RPGCanvasVisualizer,
 } from "@/library/impl/visualizer/world";
-import { EggPlayerController } from "@/examples/egggame/entity/player";
+import {
+  FinalLocationPlayerController,
+  StartLocationPlayerController,
+  WorldPlayerController
+} from "@/examples/egggame/entity/player";
 import type { EntityFactory } from "@/library/api/data/entity";
-import { Entity } from "@/library/api/data/entity";
 import { LevelVisualizer } from "@/library/api/visualizer";
 import {
   GoblinController,
@@ -22,7 +24,9 @@ import { QuestGiverNpcController } from "@/examples/egggame/entity/npc";
 import { ColorModelLoader } from "@/library/impl/models/loaders/colorModelLoader";
 import { AssetModelLoader } from "@/library/impl/models/loaders/assetModelLoader";
 import { ModelLoader } from "@/library/impl/models/loaders";
-import { fetchAllEggs } from "@/examples/egggame/data/repository";
+import { EggLevelBuilder } from "@/examples/egggame/level/loader";
+import { DeathscreenActivity } from "@/examples/egggame/actiivity/deathscreen";
+import { config } from "@/examples/egggame/config";
 
 export class EggWorldActivity extends GameWorldActivity<
   CanvasRenderer,
@@ -39,12 +43,14 @@ export class EggWorldActivity extends GameWorldActivity<
 
   public static build(
     renderer: CanvasRenderer,
-    assetsUrl: string,
-    levelPath: string,
     isDeveloperMode: boolean = false,
   ) {
     const controllers = {
-      player: (data?: any) => new EggPlayerController(data?.speed),
+      player_start: (data?: any) =>
+        new StartLocationPlayerController(data?.speed),
+      player_world: (data?: any) => new WorldPlayerController(data?.speed),
+      player_finish: (data?: any) =>
+        new FinalLocationPlayerController(data?.speed),
       npc_quest_qiver: (data?: any) => new QuestGiverNpcController(),
       slime: (data?: any) =>
         new SlimeController(
@@ -68,14 +74,14 @@ export class EggWorldActivity extends GameWorldActivity<
 
     const entityFactory = new DefaultEntityFactory<Rect2D>();
 
-    const levelBuilder = new AssetsLevelBuilder2D(
-      assetsUrl + levelPath,
+    const levelBuilder = new EggLevelBuilder(
+      config.resources.levelUrl,
       new Map(Object.entries(controllers)),
     );
 
     const fallbackModelLoader = new ColorModelLoader();
     const modelLoader = new AssetModelLoader(
-      assetsUrl + "image/",
+      config.resources.imageUrl,
       fallbackModelLoader,
     );
 
@@ -118,38 +124,10 @@ export class EggWorldActivity extends GameWorldActivity<
     return activity;
   }
 
-  public async generateWorldBounds(
-    level: Level<Rect2D>,
-  ): Promise<Array<Entity<Rect2D>>> {
-    return [];
-  }
+  public onPlayerDeath() {
+    const deathscreen = this.createActivity(DeathscreenActivity);
+    this.startActivity(deathscreen);
 
-  public async generateWorldContent(
-    level: Level<Rect2D>,
-  ): Promise<Array<Entity<Rect2D>>> {
-    const content = new Array<Entity<Rect2D>>();
-
-    const eggs = await fetchAllEggs();
-    const eggModel = await this.modelLoader.load("objects/static/egg.png");
-
-    const baseEggRect = new Rect2D(0.5, 0.5, 19.5, 3.5);
-
-    for (const egg of eggs) {
-      const eggPosition = new Rect2D(0, 0, egg.x, egg.y);
-
-      const entity = this.entityFactory.buildEntity(
-        "egg",
-        eggModel,
-        true,
-        1000,
-        baseEggRect.plusRectCoordinates(eggPosition),
-        null,
-        null,
-      );
-
-      content.push(entity);
-    }
-
-    return content;
+    this.finish();
   }
 }

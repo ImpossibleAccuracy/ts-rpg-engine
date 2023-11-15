@@ -14,11 +14,7 @@ function updateCanvasSize() {
 }
 
 onMounted(() => {
-  const isDev = process.env.NODE_ENV == "development";
-
-  const assetsPath = isDev ? "/src/assets/egg/" : "/assets/egg/";
-
-  createEggWorld(canvas.value!, assetsPath, isDev);
+  createEggWorld(canvas.value!);
 
   updateCanvasSize();
   window.addEventListener("resize", updateCanvasSize);

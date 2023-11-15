@@ -2,6 +2,13 @@ import { Level } from "@/library/api/level";
 import { Rect2D } from "@/library/api/data/rect";
 import { AbstractVisualizer, LevelVisualizer } from "@/library/api/visualizer";
 import { CanvasRenderer } from "@/library/impl/visualizer/renderer";
+import type { Hint } from "@/library/impl/activity/world/model";
+import {
+  accelerateInterpolator,
+  decelerateInterpolator,
+  loaderData,
+} from "@/library/impl/visualizer/world/loader";
+import { SpriteImageModel } from "@/library/impl/models/spriteImageModel";
 
 export abstract class CanvasVisualizer extends AbstractVisualizer<CanvasRenderer> {
   protected constructor(renderer: CanvasRenderer) {
@@ -9,7 +16,49 @@ export abstract class CanvasVisualizer extends AbstractVisualizer<CanvasRenderer
   }
 }
 
-export class FullMapVisualizer extends LevelVisualizer<CanvasRenderer, Rect2D> {
+abstract class LevelLevelVisualizerWithSimpleLoader extends LevelVisualizer<
+  CanvasRenderer,
+  Rect2D
+> {
+  private loadingProgress: number = 0;
+
+  public displayLevelLoading(): void {
+    this.renderer.clear();
+
+    const canvas = this.renderer.canvas;
+    const context = this.renderer.context;
+
+    context.fillStyle = "#181818";
+    context.fillRect(0, 0, canvas.width, canvas.height);
+
+    // Draw circle
+    this.loadingProgress = (this.loadingProgress + 0.01) % 1;
+
+    context.beginPath();
+
+    const startX = canvas.width / 2;
+    const startY = canvas.height / 2;
+
+    const start =
+      accelerateInterpolator(this.loadingProgress) * loaderData.speed;
+    const end = decelerateInterpolator(this.loadingProgress) * loaderData.speed;
+
+    context.arc(
+      startX,
+      startY,
+      loaderData.radius,
+      (start - 0.5) * Math.PI,
+      (end - 0.5) * Math.PI,
+    );
+
+    context.lineWidth = 3;
+    context.strokeStyle = "white";
+    context.fill();
+    context.stroke();
+  }
+}
+
+export class FullMapVisualizer extends LevelLevelVisualizerWithSimpleLoader {
   public isDebugMode: boolean;
 
   constructor(renderer: CanvasRenderer, isDebugMode: boolean = false) {
@@ -73,10 +122,7 @@ export class FullMapVisualizer extends LevelVisualizer<CanvasRenderer, Rect2D> {
   }
 }
 
-export class RPGCanvasVisualizer extends LevelVisualizer<
-  CanvasRenderer,
-  Rect2D
-> {
+export class RPGCanvasVisualizer extends LevelLevelVisualizerWithSimpleLoader {
   public isDebugMode: boolean;
 
   constructor(
@@ -88,7 +134,7 @@ export class RPGCanvasVisualizer extends LevelVisualizer<
     this.isDebugMode = isDebugMode;
   }
 
-  public display(level: Level<Rect2D>) {
+  public display(level: Level<Rect2D>, hints: Array<Hint<Rect2D>>) {
     this.renderer.clear();
 
     const cameraRect: Rect2D = this.calculateCameraRect(level);
@@ -145,6 +191,18 @@ export class RPGCanvasVisualizer extends LevelVisualizer<
 
         this.renderer.context.strokeStyle = "none";
       }
+    }
+
+    for (const hint of hints) {
+      if (!hint.position.isOverlaps(cameraRect)) continue;
+
+      this.renderer.drawModelManually(
+        hint.content,
+        (hint.position.posX - cameraRect.posX) * this.blockSizePx,
+        (hint.position.posY - cameraRect.posY) * this.blockSizePx,
+        hint.position.sizeX * this.blockSizePx,
+        hint.position.sizeY * this.blockSizePx,
+      );
     }
 
     this.renderer.save();

@@ -7,6 +7,10 @@ export class Timer {
     this.start = Date.now();
   }
 
+  public get timeLeft(): number {
+    return this.start + this.duration - Date.now();
+  }
+
   public reset() {
     this.start = Date.now();
   }

@@ -6,6 +6,12 @@ import { AbstractActivity } from "@/library/api/activity";
 import type { CanvasRenderer } from "@/library/impl/visualizer/renderer";
 import type { Nullable } from "@/library/api/data/common";
 
+export class RequireError extends Error {
+  constructor(message: string) {
+    super(message);
+  }
+}
+
 export abstract class EntityController<R extends Rect> {
   private owner: Nullable<AbstractActivity<CanvasRenderer>>;
 
@@ -17,7 +23,7 @@ export abstract class EntityController<R extends Rect> {
     return this.owner !== null;
   }
 
-  public attachToActivity(activity: AbstractActivity<CanvasRenderer>) {
+  public onAttachToActivity(activity: AbstractActivity<CanvasRenderer>) {
     if (this.owner) {
       throw new Error("Entity controller already attached to activity");
     }
@@ -25,8 +31,28 @@ export abstract class EntityController<R extends Rect> {
     this.owner = activity;
   }
 
+  public onDetachFromActivity() {
+    if (!this.owner) {
+      throw new Error(
+        "Entity controller must be attached to activity before detach",
+      );
+    }
+
+    this.owner = null;
+  }
+
   public startActivity(activity: AbstractActivity<any>) {
     this.requireActivity().startActivity(activity);
+  }
+
+  public update(
+    entity: DynamicEntity<R>,
+    level: Level<R>,
+    controller: AbstractController,
+  ) {
+    if (!this.isAttached) return;
+
+    this.onUpdate(entity, level, controller);
   }
 
   abstract onUpdate(
@@ -39,7 +65,7 @@ export abstract class EntityController<R extends Rect> {
     const owner = this.owner;
 
     if (!owner) {
-      throw new Error("Entity controller not attached to any activity");
+      throw new RequireError("Entity controller not attached to any activity");
     }
 
     return owner;

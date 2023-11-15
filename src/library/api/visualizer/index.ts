@@ -19,5 +19,7 @@ export abstract class LevelVisualizer<
     super(renderer);
   }
 
-  abstract display(level: Level<R>): void;
+  public abstract display(level: Level<R>, ...other: Array<unknown>): void;
+
+  public abstract displayLevelLoading(): void;
 }

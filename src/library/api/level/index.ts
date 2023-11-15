@@ -1,11 +1,11 @@
 import type {
   DynamicEntity,
   Entity,
-  EntityControllerFactory, EntityFactory
+  EntityControllerFactory,
+  EntityFactory,
 } from "@/library/api/data/entity";
 import { Rect } from "@/library/api/data/rect";
 import type { Nullable } from "@/library/api/data/common";
-
 
 import { ModelLoader } from "@/library/impl/models/loaders";
 
@@ -56,6 +56,7 @@ export class Level<R extends Rect> {
 
 export abstract class LevelBuilder<R extends Rect> {
   abstract build(
+    level: string,
     entityFactory: EntityFactory<R>,
     modelLoader: ModelLoader,
   ): Promise<Level<R>>;
@@ -65,26 +66,24 @@ export abstract class AssetsLevelBuilder<
   R extends Rect,
   LevelJson,
 > extends LevelBuilder<R> {
-  public readonly mapUrl: string;
-  public readonly controllers: Map<string, EntityControllerFactory<R>>;
-
   protected constructor(
-    path: string,
-    controllers: Map<string, EntityControllerFactory<R>>,
+    public readonly baseLevelPath: string,
+    public readonly controllers: Map<string, EntityControllerFactory<R>>,
   ) {
     super();
-    this.mapUrl = path;
-    this.controllers = controllers;
   }
 
   async build(
+    mapName: string,
     entityFactory: EntityFactory<R>,
     modelLoader: ModelLoader,
   ): Promise<Level<R>> {
-    const response = await fetch(this.mapUrl);
+    const mapUrl = this.baseLevelPath + mapName;
+
+    const response = await fetch(mapUrl);
 
     if (!response.ok) {
-      throw new Error("Cannot load level from path: " + this.mapUrl);
+      throw new Error("Cannot load level from path: " + mapUrl);
     }
 
     const json = (await response.json()) as LevelJson;
